@@ -1,0 +1,185 @@
+/* ==========================================================================
+   JOVEM PWA STYLES - PROGRAMA DESCUBRA!
+   Mobile-first design with bottom navigation bar
+   ========================================================================== */
+
+/* ===================== LAYOUT ===================== */
+.jovem-section {
+  min-height: 100vh;
+  padding-top: 5rem;
+  padding-bottom: 5rem; /* Space for bottom nav */
+  background-color: #f0f4f8;
+}
+
+.jovem-layout {
+  max-width: 700px;
+  margin: 0 auto;
+  padding: 1.5rem;
+}
+
+/* ===================== BOTTOM NAVIGATION (MOBILE DEFAULT) ===================== */
+.jovem-bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 4.5rem;
+  background-color: #ffffff;
+  border-top: 1px solid rgba(10, 37, 64, 0.08);
+  box-shadow: 0 -4px 20px rgba(10, 37, 64, 0.08);
+  display: flex;
+  align-items: stretch;
+  z-index: 200;
+  padding-bottom: env(safe-area-inset-bottom); /* iPhone notch support */
+}
+
+.jovem-nav-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  color: var(--color-text-light);
+  font-family: var(--font-body);
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  text-decoration: none;
+  transition: color 0.2s ease;
+  padding: 0.5rem 0.25rem;
+  border-top: 2.5px solid transparent;
+  position: relative;
+}
+
+.jovem-nav-item:hover {
+  color: var(--color-primary);
+}
+
+.jovem-nav-item.active {
+  color: var(--color-secondary);
+  border-top-color: var(--color-secondary);
+  background-color: rgba(13, 92, 58, 0.04);
+}
+
+.jovem-nav-item svg {
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
+}
+
+.jovem-nav-item.active svg {
+  transform: translateY(-1px);
+}
+
+/* ===================== SIDEBAR (DESKTOP ONLY - shown above 768px) ===================== */
+.jovem-sidebar-wrapper {
+  display: none;
+}
+
+/* ===================== HEADER ===================== */
+.jovem-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 100;
+  background-color: rgba(255, 255, 255, 0.97);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(10, 37, 64, 0.08);
+  height: 5rem;
+  display: flex;
+  align-items: center;
+  padding: 0 1.25rem;
+  justify-content: space-between;
+}
+
+.jovem-header-logo {
+  font-family: var(--font-title);
+  font-weight: 800;
+  font-size: 1.4rem;
+  color: var(--color-primary);
+  text-decoration: none;
+}
+
+.jovem-header-logo span {
+  color: var(--color-orange);
+}
+
+.jovem-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.jovem-header-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid rgba(10, 37, 64, 0.1);
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-light);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+}
+
+.jovem-header-btn:hover {
+  background: var(--color-primary);
+  color: #ffffff;
+  border-color: var(--color-primary);
+}
+
+/* ===================== CONTENT CARD ===================== */
+.jovem-content-card {
+  background: #ffffff;
+  border-radius: 1rem;
+  padding: 1.5rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+}
+
+/* ===================== DESKTOP LAYOUT (sidebar on the left) ===================== */
+@media (min-width: 768px) {
+  .jovem-bottom-nav {
+    display: none; /* Hide bottom nav on desktop */
+  }
+
+  .jovem-section {
+    padding-bottom: 3rem; /* Reset bottom padding on desktop */
+  }
+
+  .jovem-sidebar-wrapper {
+    display: block;
+  }
+
+  .jovem-desktop-layout {
+    display: grid;
+    grid-template-columns: 240px 1fr;
+    gap: 2rem;
+    align-items: start;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 1.5rem;
+  }
+
+  .jovem-layout {
+    max-width: none;
+    padding: 0;
+  }
+}
+
+/* ===================== SAFE AREA (iPhone X+) ===================== */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  .jovem-bottom-nav {
+    padding-bottom: env(safe-area-inset-bottom);
+    height: calc(4.5rem + env(safe-area-inset-bottom));
+  }
+
+  .jovem-section {
+    padding-bottom: calc(5rem + env(safe-area-inset-bottom));
+  }
+}

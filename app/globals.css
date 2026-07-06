@@ -1,0 +1,20 @@
+/* ==========================================================================
+   MAIN STYLE ENTRYPOINT - PROGRAMA DESCUBRA!
+   ========================================================================== */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap');
+
+@import '../styles/variables.css';
+@import '../styles/landing.css';
+@import '../styles/login.css';
+@import '../styles/admin.css';
+@import '../styles/map.css';
+@import '../styles/jovem.css';
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
