@@ -304,7 +304,7 @@ export default function TecnicoOverviewPage() {
                Painel do Mercado de Trabalho (Vagas)
              </h3>
              <p style={{ fontSize: '0.75rem', color: 'var(--color-text-light)', marginBottom: '1.5rem', fontWeight: 500 }}>
-               Status de ocupação das vagas abertas por empresas parceiras do Programa Descubra.
+               Status de ocupação das vagas abertas por empresas parceiras do DescubraHub.
              </p>
 
              <div style={{ marginBottom: '1.25rem' }}>

@@ -119,7 +119,7 @@ export async function POST(request: NextRequest) {
       });
 
       const prompt = `
-        Você é o "Coordenador de Matching IA" do Programa Descubra 2.0. Sua função é analisar as exigências de uma vaga aberta e o perfil de jovens cadastrados, recomendando os TOP 3 candidatos ideais.
+        Você é o "Coordenador de Matching IA" do DescubraHub. Sua função é analisar as exigências de uma vaga aberta e o perfil de jovens cadastrados, recomendando os TOP 3 candidatos ideais.
         DADOS DA VAGA:
         - Título: ${vaga.titulo}
         - Descrição: ${vaga.descricao}
@@ -228,7 +228,7 @@ export async function POST(request: NextRequest) {
       }
 
       const prompt = `
-        Você é o "Coordenador de Matching IA" do Programa Descubra 2.0. Sua função é analisar o perfil de um jovem e encontrar as TOP 3 vagas disponíveis mais adequadas para ele.
+        Você é o "Coordenador de Matching IA" do DescubraHub. Sua função é analisar o perfil de um jovem e encontrar as TOP 3 vagas disponíveis mais adequadas para ele.
 
         PERFIL DO JOVEM:
         - Nome: ${jovemPerfil.nome}

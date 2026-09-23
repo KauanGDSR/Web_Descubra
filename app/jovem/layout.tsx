@@ -19,7 +19,7 @@ function JovemHeader() {
   return (
     <header className="jovem-header" id="main-header">
       <Link href="/" className="jovem-header-logo" aria-label="Ir para a Home">
-        Descubra<span>!</span>
+        DescubraHub
       </Link>
       <div className="jovem-header-actions">
         <button className="jovem-header-btn" aria-label="Notificações">

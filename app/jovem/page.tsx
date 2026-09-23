@@ -12,7 +12,7 @@ export default function JovemDashboard() {
           Olá, João! <Star size={24} color="#f59e0b" fill="#f59e0b" />
         </h2>
         <p style={{ color: 'var(--color-text)', marginTop: '0.5rem' }}>
-          Bem-vindo ao seu espaço no Programa Descubra. Você está <strong>Em Capacitação</strong>.
+          Bem-vindo ao seu espaço no DescubraHub. Você está <strong>Em Capacitação</strong>.
         </p>
       </header>
 

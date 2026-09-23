@@ -233,7 +233,7 @@ export default function ReportTab() {
           'Buscando os últimos 50 registros de acompanhamento no Supabase...',
           'Processando dados demográficos dos jovens ativos...',
           'Cruzando assiduidade média geral com as localidades/bairros...',
-          'Analisando eficácia da gamificação de Descubra Points...',
+          'Analisando eficácia da gamificação de DescubraHub Points...',
           'Acionando modelo Google Gemini 2.5 Flash...',
           'Formatando tendências qualitativas e pontos de alerta críticos...',
           'Validando dados retornados contra o esquema Zod (geralSchema)...',
@@ -863,7 +863,7 @@ export default function ReportTab() {
                 </div>
                 <div>
                   <div className="report-stat-val">+{totalPoints}</div>
-                  <div className="report-stat-lbl">Descubra Points</div>
+                  <div className="report-stat-lbl">DescubraHub Points</div>
                 </div>
               </div>
             </div>
@@ -962,8 +962,8 @@ export default function ReportTab() {
                             <td style={{ fontWeight: 700, color: 'var(--color-primary)' }}>{ac.jovemNome}</td>
                             <td>{ac.cidade}</td>
                             <td>
-                              <span className={`badge-status badge-${ac.assiduidade === 'Presente' ? 'presenca' : ac.assiduidade === 'Atrasado' ? 'atraso' : 'falta'}`}>
-                                {ac.assiduidade || 'N/I'}
+                              <span className={`badge-status badge-${(ac.assiduidade === 'Presente' || ac.assiduidade === 'Atrasado') ? 'presenca' : 'falta'}`}>
+                                {ac.assiduidade === 'Atrasado' ? 'Presente' : (ac.assiduidade || 'N/I')}
                               </span>
                             </td>
                             <td>
@@ -1003,7 +1003,7 @@ export default function ReportTab() {
                                         <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
                                           <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
                                         </svg>
-                                        +{ac.pontos} Descubra Points
+                                        +{ac.pontos} DescubraHub Points
                                       </span>
                                     )}
                                   </div>

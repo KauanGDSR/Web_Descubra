@@ -64,8 +64,8 @@ export default function LoadingScreen({ onComplete, durationMs }: { onComplete?:
     return () => clearInterval(interval);
   }, [durationMs]);
 
-  // "Descubra!" text characters
-  const word = "Descubra".split('');
+  // "DescubraHub" text characters
+  const word = "DescubraHub".split('');
 
   // Variants for the exit animation (scatter outwards)
   const containerExit: Variants = {

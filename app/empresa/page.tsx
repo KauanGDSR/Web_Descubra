@@ -242,7 +242,7 @@ export default function EmpresaDashboard() {
             </p>
             <div style={{ fontSize: '0.85rem', color: 'var(--color-text-dark)', lineHeight: '1.5', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
               <p>
-                O <strong>Programa Descubra!</strong> fomenta a inserção de adolescentes e jovens que se encontram em situação de acolhimento, egressos de medidas socioeducativas ou trabalho infantil no mercado formal protegido.
+                O <strong>DescubraHub</strong> fomenta a inserção de adolescentes e jovens que se encontram em situação de acolhimento, egressos de medidas socioeducativas ou trabalho infantil no mercado formal protegido.
               </p>
               <p>
                 Ao disponibilizar vagas de <strong>Aprendizagem Profissional</strong> ou <strong>Emprego</strong>, sua empresa não apenas atende a cotas legais, mas abre portas reais para capacitação profissional, cidadania ativa e dignidade.

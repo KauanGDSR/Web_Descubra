@@ -27,7 +27,7 @@ export default function JovemSidebar() {
         <h1 className="admin-sidebar-title" style={{ color: 'var(--color-primary)' }}>
           Área do Jovem
         </h1>
-        <p className="admin-sidebar-subtitle">Programa Descubra!</p>
+        <p className="admin-sidebar-subtitle">DescubraHub</p>
       </div>
       <nav className="admin-tabs-nav" aria-label="Navegação do Jovem">
         {TABS.map((tab) => (

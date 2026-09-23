@@ -20,7 +20,7 @@ interface Vacancy {
   bolsa_auxilio: number;
   idade_minima: number;
   escolaridade_exigida: string | null;
-  competencias_desejadas: string | null;
+  competencias_desejadas: string[] | string | null;
   created_at: string;
 }
 
@@ -107,7 +107,9 @@ export default function VagasPage() {
       bolsa_auxilio: vacancy.bolsa_auxilio,
       idade_minima: vacancy.idade_minima,
       escolaridade_exigida: vacancy.escolaridade_exigida || 'Ensino Fundamental Incompleto',
-      competencias_desejadas: vacancy.competencias_desejadas || ''
+      competencias_desejadas: Array.isArray(vacancy.competencias_desejadas)
+        ? vacancy.competencias_desejadas.join(', ')
+        : vacancy.competencias_desejadas || ''
     });
     setModalOpen(true);
   };
@@ -137,7 +139,9 @@ export default function VagasPage() {
         bolsa_auxilio: Number(form.bolsa_auxilio),
         idade_minima: Number(form.idade_minima),
         escolaridade_exigida: form.escolaridade_exigida || null,
-        competencias_desejadas: form.competencias_desejadas.trim() || null,
+        competencias_desejadas: form.competencias_desejadas.trim()
+          ? form.competencias_desejadas.split(',').map(s => s.trim()).filter(Boolean)
+          : null,
         status: editVacancyId ? undefined : 'Aberta' // Status inicial é Aberta ao cadastrar
       };
 
@@ -347,7 +351,7 @@ export default function VagasPage() {
         </button>
         <div className="admin-form-header">
           <h2 className="admin-form-title">{editVacancyId ? 'Editar Oportunidade' : 'Publicar Nova Oportunidade'}</h2>
-          <p className="admin-form-subtitle">Preencha os detalhes da vaga a ser divulgada no Programa Descubra!</p>
+          <p className="admin-form-subtitle">Preencha os detalhes da vaga a ser divulgada no DescubraHub</p>
         </div>
         <form className="admin-form" onSubmit={handleSubmit}>
           <div className="admin-grid-form">

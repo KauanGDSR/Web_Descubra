@@ -413,7 +413,7 @@ export async function POST(request: NextRequest) {
 💬 *Comportamento:* ${dadosFinais.comportamento || '_Não informado_'}`;
 
         if (ganhouPontos) {
-          confirmacao += `\n\n🏆 *Jovem ganhou +15 Descubra Points!*`;
+          confirmacao += `\n\n🏆 *Jovem ganhou +15 DescubraHub Points!*`;
         }
 
         await sendTelegramMessage(telegramChatId, confirmacao);
@@ -452,10 +452,21 @@ export async function POST(request: NextRequest) {
 
     // ── FLUXO B: SEM SESSÃO PENDENTE (ETAPA 1 - CAPTURA INICIAL DO RELATO) ──────
     const promptBase = `
-      Você é um assistente de análise de dados. Um técnico educacional ou social enviou a seguinte mensagem no Telegram reportando sobre um jovem.
+      Você é um assistente de análise de dados do DescubraHub. Um técnico educacional ou social enviou a seguinte mensagem no Telegram reportando sobre um jovem.
 
-      Extraia as informações necessárias para preencher os campos.
-      Se não houver menção explícita a algum dos campos (como desempenho ou comportamento), retorne null para aquele campo.
+      REGRAS OBRIGATÓRIAS:
+      1. O campo "assiduidade" é SEMPRE OBRIGATÓRIO. Extraia se o aluno esteve "Presente" ou "Faltou".
+         - Se o técnico não mencionar claramente a presença/ausência, tente inferir pelo contexto. Se mencionou atividades feitas pelo aluno, assuma "Presente".
+         - Caso não seja possível inferir de forma alguma, retorne "Presente" como padrão.
+      2. Se o aluno estiver PRESENTE (assiduidade = "Presente"):
+         - "desempenho" é OBRIGATÓRIO (extraia do contexto: Excelente, Bom, Regular, Insuficiente)
+         - "comportamento" é OBRIGATÓRIO (extraia do contexto: Participativo, Agitado, Distraído, Conflituoso)
+      3. Se o aluno FALTOU (assiduidade = "Faltou"):
+         - "desempenho" DEVE ser "N/A"
+         - "comportamento" DEVE ser "N/A"
+         - O "resumo" deve indicar apenas que o aluno faltou.
+
+      Extraia as informações necessárias para preencher os campos seguindo as regras acima.
     `;
 
     let aiMessages: ModelMessage[] = [];
@@ -486,9 +497,9 @@ export async function POST(request: NextRequest) {
         model: google('gemini-2.5-flash'),
         schema: z.object({
           aluno: z.string().describe('O nome do aluno mencionado na mensagem'),
-          assiduidade: z.string().nullable().describe('Frequência/assiduidade (ex: boa, faltou, presente)'),
-          desempenho: z.string().nullable().describe('Desempenho do aluno (ex: excelente, com dificuldades)'),
-          comportamento: z.string().nullable().describe('Comportamento (ex: participativo, agitado)'),
+          assiduidade: z.string().describe('Frequência/assiduidade: DEVE ser "Presente" ou "Faltou". OBRIGATÓRIO.'),
+          desempenho: z.string().nullable().describe('Desempenho do aluno. Se faltou, retorne "N/A". Se presente, extraia do contexto (Excelente, Bom, Regular, Insuficiente).'),
+          comportamento: z.string().nullable().describe('Comportamento do aluno. Se faltou, retorne "N/A". Se presente, extraia do contexto (Participativo, Agitado, Distraído, Conflituoso).'),
           resumo: z.string().nullable().describe('Breve resumo profissional da mensagem'),
         }),
         messages: aiMessages,
@@ -525,6 +536,22 @@ export async function POST(request: NextRequest) {
         '⚠️ Não consegui identificar o nome do jovem na sua mensagem. Por favor, mencione o nome completo do aluno e tente novamente.\n\nExemplo: _"O jovem João Silva teve um bom desempenho hoje..."_'
       );
       return NextResponse.json({ ok: true, message: 'Nome do aluno não identificado.' }, { status: 200 });
+    }
+
+    // ── VALIDAÇÃO PÓS-EXTRAÇÃO: Assiduidade obrigatória e lógica de falta ──
+    // Se assiduidade não foi informada pela IA, assumir Presente
+    if (!assiduidade || assiduidade.toLowerCase() === 'null') {
+      dados_ia.assiduidade = 'Presente';
+    }
+
+    // Normalizar assiduidade para "Presente" ou "Faltou"
+    const assidLower = (dados_ia.assiduidade || '').toLowerCase();
+    if (assidLower.includes('falt') || assidLower.includes('ausent') || assidLower.includes('não compareceu') || assidLower.includes('nao compareceu')) {
+      dados_ia.assiduidade = 'Faltou';
+      dados_ia.desempenho = 'N/A';
+      dados_ia.comportamento = 'N/A';
+    } else {
+      dados_ia.assiduidade = 'Presente';
     }
 
     // Normaliza o nome extraído pela IA (remove caracteres especiais e wildcards SQL)

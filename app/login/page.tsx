@@ -133,8 +133,8 @@ export default function LoginPage() {
 
         <div className="login-form-wrapper">
           <div className="login-logo">
-            <Link href="/" className="logo-descubra" aria-label="Ir para a Home Page do Programa Descubra">
-              Descubra<span>!</span>
+            <Link href="/" className="logo-descubra" aria-label="Ir para a Home Page do DescubraHub">
+              DescubraHub
             </Link>
           </div>
 
@@ -207,7 +207,7 @@ export default function LoginPage() {
                 >
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
                   <span className="quick-access-role">Admin</span>
-                  <span className="quick-access-user">Admin Descubra</span>
+                  <span className="quick-access-user">Admin DescubraHub</span>
                 </button>
 
                 <button
@@ -249,7 +249,7 @@ export default function LoginPage() {
           <blockquote className="login-quote">
             A aprendizagem é o caminho que transforma vulnerabilidade em protagonismo juvenil.
           </blockquote>
-          <cite className="login-quote-author">Programa Descubra! MG</cite>
+          <cite className="login-quote-author">DescubraHub MG</cite>
         </div>
       </div>
     </div>

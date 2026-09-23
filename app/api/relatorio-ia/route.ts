@@ -143,7 +143,7 @@ Resumo: ${a.resumo || 'N/A'}`;
         : '';
 
       const promptContext = `
-Você é um psicopedagogo analista de dados avançado do Programa Descubra.
+Você é um psicopedagogo analista de dados avançado do DescubraHub.
 O objetivo é gerar um relatório consolidado e inteligente do jovem abaixo com base no histórico de acompanhamentos registrados e em sua região/CEP de residência.
 
 Jovem: ${nomeParaRelatorio} (Equipamento: ${eqNome})
@@ -231,7 +231,7 @@ Nota: ${a.resumo || '-'}`;
         : '';
 
       const promptContext = `
-Você é o gestor estratégico do Programa Descubra.
+Você é o gestor estratégico do DescubraHub.
 O objetivo é gerar um painel analítico do cenário atual do programa com base nos **últimos ${acompanhamentos.length} registros** de acompanhamento, fornecendo especial atenção para a distribuição de jovens por bairro e CEP.
 
 Amostra de registros recentes (inclui bairro/CEP de cada jovem):

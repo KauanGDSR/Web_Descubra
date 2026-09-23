@@ -28,7 +28,7 @@ function Header() {
             </svg>
           </a>
           <div className="logo-divider" role="presentation" />
-          <a href="#" className="logo-descubra" aria-label="Ir para o topo - Programa Descubra">Descubra<span>!</span></a>
+          <a href="#" className="logo-descubra" aria-label="Ir para o topo - DescubraHub">DescubraHub</a>
         </div>
         <nav aria-label="Navegação Principal">
           <button className="btn-menu-toggle" id="menu-toggle" aria-expanded={menuOpen} aria-controls="nav-menu" aria-label="Abrir menu de navegação" onClick={() => setMenuOpen(!menuOpen)}>
@@ -36,7 +36,7 @@ function Header() {
           </button>
           <ul className={`nav-menu ${menuOpen ? 'open' : ''}`} id="nav-menu">
             <li><a href="#about" className="nav-link" onClick={() => setMenuOpen(false)}>Quem Somos</a></li>
-            <li><a href="#stats" className="nav-link" onClick={() => setMenuOpen(false)}>Descubra em Números</a></li>
+            <li><a href="#stats" className="nav-link" onClick={() => setMenuOpen(false)}>DescubraHub em Números</a></li>
             <li><a href="#join" className="nav-link" onClick={() => setMenuOpen(false)}>Como Aderir</a></li>
             <li>
               <Link href="/login" className="nav-link btn-outline" style={{ padding: '0.5rem 1rem', borderRadius: 'var(--border-radius-sm)', border: '2px solid var(--color-primary)', display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}>
@@ -73,7 +73,7 @@ function HeroSection() {
       <div className="container">
         <div className="hero-content">
           <h1 className="hero-title">Transformando<br />Barreiras em<br /><span>Oportunidades</span></h1>
-          <p className="hero-subtitle">O Programa Descubra abre caminhos reais para o mundo do trabalho protegido para adolescentes e jovens em Minas Gerais.</p>
+          <p className="hero-subtitle">O DescubraHub abre caminhos reais para o mundo do trabalho protegido para adolescentes e jovens em Minas Gerais.</p>
           <div className="hero-actions">
             <a href="#join" className="btn btn-primary" id="cta-hero">Faça parte da nossa rede</a>
             <button className="btn-play-wrapper" id="btn-video" aria-label="Conheça o Programa">
@@ -128,7 +128,7 @@ function AboutSection() {
             <h2 className="section-title">Cooperação que gera <span>futuro</span></h2>
           </div>
           <div className="about-content-text">
-            <p>O <strong>Programa Descubra</strong> é uma rede inédita de cooperação interinstitucional em Minas Gerais. Unimos forças governamentais, judiciais e da sociedade civil para promover caminhos de inclusão social e cidadania ativa.</p>
+            <p>O <strong>DescubraHub</strong> é uma rede inédita de cooperação interinstitucional em Minas Gerais. Unimos forças governamentais, judiciais e da sociedade civil para promover caminhos de inclusão social e cidadania ativa.</p>
             <p>Através da oferta de cursos de qualificação e da inserção assistida em vagas de <strong>aprendizagem profissional protegida</strong>, o programa reconecta jovens historicamente invisibilizados ao direito à educação prática, renda e autonomia.</p>
           </div>
           <span className="about-partner-logos-title">Órgãos Iniciadores e Apoiadores</span>
@@ -187,7 +187,7 @@ function StatsSection() {
       <div className="container">
         <div className="section-title-wrapper">
           <span className="section-tag" style={{ backgroundColor: 'rgba(255,255,255,0.1)', color: 'var(--color-yellow)' }}>Resultados</span>
-          <h2 className="section-title" style={{ color: 'white' }}>O Descubra em <span>Números</span></h2>
+          <h2 className="section-title" style={{ color: 'white' }}>O DescubraHub em <span>Números</span></h2>
         </div>
         <div className="stats-grid">
           {STATS.map((stat, i) => (
@@ -259,8 +259,8 @@ function Footer() {
           </div>
         </div>
         <div className="footer-bottom">
-          <div className="footer-logo-descubra">Programa Descubra<span>!</span></div>
-          <p className="footer-copy">© 2026 Programa Descubra! - Cooperação Interinstitucional de Minas Gerais. Todos os direitos reservados.</p>
+          <div className="footer-logo-descubra">DescubraHub</div>
+          <p className="footer-copy">© 2026 DescubraHub - Cooperação Interinstitucional de Minas Gerais. Todos os direitos reservados.</p>
           <div className="footer-socials">
             {[{ label: 'LinkedIn', href: 'https://linkedin.com' }, { label: 'Instagram', href: 'https://instagram.com' }, { label: 'YouTube', href: 'https://youtube.com' }].map((s) => (
               <a key={s.label} href={s.href} target="_blank" rel="noopener noreferrer" className="footer-social-link" aria-label={`Acessar ${s.label}`}>

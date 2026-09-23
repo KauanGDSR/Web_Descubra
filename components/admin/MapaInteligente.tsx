@@ -5,6 +5,7 @@ import { MapContainer, TileLayer, GeoJSON, CircleMarker, Popup, Tooltip, useMap 
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { createClient } from '@/utils/supabase/client';
+import { Search } from 'lucide-react';
 
 // Coordenadas geográficas centrais para zoom reativo nos bairros de Pirapora
 const coordenadasBairros: Record<string, [number, number]> = {
@@ -229,6 +230,8 @@ export default function MapaInteligente() {
   const [supabase] = useState(() => createClient());
   const [malhaBairros, setMalhaBairros] = useState<any>(null);
   const [jovens, setJovens] = useState<any[]>([]);
+  const [equipamentos, setEquipamentos] = useState<any[]>([]);
+  const [empresas, setEmpresas] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -237,6 +240,9 @@ export default function MapaInteligente() {
   const [filtroBairro, setFiltroBairro] = useState<string>('todos');
   const [filtroRisco, setFiltroRisco] = useState<string>('todos');
   const [filtroSexo, setFiltroSexo] = useState<string>('todos');
+  
+  // Estado para auto-zoom no jovem
+  const [jovemSelecionadoId, setJovemSelecionadoId] = useState<string>('');
 
   // Coordenadas reativas do mapa
   const [mapCenter, setMapCenter] = useState<[number, number]>([-17.346, -44.922]);
@@ -255,12 +261,22 @@ export default function MapaInteligente() {
         .then((res) => {
           if (res.error) throw res.error;
           return res.data || [];
-        })
+        }),
+      supabase
+        .from('equipamentos')
+        .select('*, cidades(nome)')
+        .then((res) => res.data || []),
+      supabase
+        .from('empresas_parceiras')
+        .select('*, cidades(nome)')
+        .then((res) => res.data || [])
     ])
-      .then(([geojson, dbJovens]) => {
+      .then(([geojson, dbJovens, dbEquips, dbEmpresas]) => {
         if (active) {
           setMalhaBairros(geojson);
           setJovens(dbJovens);
+          setEquipamentos(dbEquips);
+          setEmpresas(dbEmpresas);
           setLoading(false);
         }
       })
@@ -368,6 +384,72 @@ export default function MapaInteligente() {
     return age;
   }
 
+  // Pontos para entidades formadoras
+  const pontosEquipamentos: any[] = [];
+  equipamentos.forEach(eq => {
+    const cidade = eq.cidades?.nome || 'Pirapora';
+    let baseLat = -17.346;
+    let baseLng = -44.922;
+    if (cidade === 'Buritizeiro') { baseLat = -17.3522; baseLng = -44.9654; }
+    else if (cidade === 'Jequitaí') { baseLat = -17.2255; baseLng = -44.4352; }
+    
+    // Jitter determinístico
+    let hash = 0;
+    const idStr = eq.id || '';
+    for (let idx = 0; idx < idStr.length; idx++) {
+      hash = idStr.charCodeAt(idx) + ((hash << 5) - hash);
+    }
+    const offsetScale = 0.005;
+    const latOffset = ((hash & 0xFF) / 255 - 0.5) * offsetScale;
+    const lngOffset = (((hash >> 8) & 0xFF) / 255 - 0.5) * offsetScale;
+
+    pontosEquipamentos.push({
+      id: eq.id,
+      cidade,
+      nome: eq.nome,
+      tipo: eq.tipo,
+      lat: baseLat + latOffset,
+      lng: baseLng + lngOffset
+    });
+  });
+
+  // Pontos para empresas parceiras
+  const pontosEmpresas: any[] = [];
+  empresas.forEach(emp => {
+    const cidade = emp.cidades?.nome || 'Pirapora';
+    let baseLat = -17.346;
+    let baseLng = -44.922;
+    if (cidade === 'Buritizeiro') { baseLat = -17.3522; baseLng = -44.9654; }
+    else if (cidade === 'Jequitaí') { baseLat = -17.2255; baseLng = -44.4352; }
+    else if (cidade === 'Pirapora') {
+      const bairroDb = emp.endereco?.split('-')[1]?.trim() || 'Centro';
+      const bairro = normalizarNomeBairro(bairroDb);
+      const coordBairro = coordenadasBairros[bairro];
+      if (coordBairro) {
+        baseLat = coordBairro[0];
+        baseLng = coordBairro[1];
+      }
+    }
+
+    let hash = 0;
+    const idStr = emp.id || '';
+    for (let idx = 0; idx < idStr.length; idx++) {
+      hash = idStr.charCodeAt(idx) + ((hash << 5) - hash);
+    }
+    const offsetScale = 0.005;
+    const latOffset = ((hash & 0xFF) / 255 - 0.5) * offsetScale;
+    const lngOffset = (((hash >> 8) & 0xFF) / 255 - 0.5) * offsetScale;
+
+    pontosEmpresas.push({
+      id: emp.id,
+      cidade,
+      bairro: cidade === 'Pirapora' ? emp.endereco?.split('-')[1]?.trim() : '',
+      nome: emp.nome_fantasia || emp.razao_social,
+      lat: baseLat + latOffset,
+      lng: baseLng + lngOffset
+    });
+  });
+
   // Handler para alteração da cidade
   const handleCityChange = (cidade: string) => {
     setFiltroCidade(cidade);
@@ -398,6 +480,24 @@ export default function MapaInteligente() {
       if (coordenadas) {
         setMapCenter(coordenadas);
         setMapZoom(15);
+      }
+    }
+  };
+
+  // Handler para seleção de jovem
+  const handleJovemSelect = (jovemId: string) => {
+    setJovemSelecionadoId(jovemId);
+    if (jovemId) {
+      const ponto = dynamicPontosVulnerabilidade.find(p => p.id === jovemId);
+      if (ponto) {
+        setFiltroCidade(ponto.cidade);
+        if (ponto.cidade === 'Pirapora' && ponto.bairro) {
+          setFiltroBairro(ponto.bairro);
+        } else {
+          setFiltroBairro('todos');
+        }
+        setMapCenter([ponto.lat, ponto.lng]);
+        setMapZoom(17);
       }
     }
   };
@@ -528,6 +628,9 @@ export default function MapaInteligente() {
     });
   };
 
+  const pontosEquipamentosFiltrados = pontosEquipamentos.filter(p => filtroCidade === 'todos' || p.cidade === filtroCidade);
+  const pontosEmpresasFiltrados = pontosEmpresas.filter(p => filtroCidade === 'todos' || p.cidade === filtroCidade);
+
   const bairrosFiltrados = obterBairrosFiltrados();
   const pontosFiltrados = obterPontosFiltrados();
 
@@ -608,7 +711,7 @@ export default function MapaInteligente() {
           <div className="map-panel-info">
             <h4>Vulnerabilidade Territorial</h4>
             <p className="map-panel-desc">
-              Painel georreferenciado e demográfico do Programa Descubra! no Norte de Minas.
+              Painel georreferenciado e demográfico do DescubraHub no Norte de Minas.
             </p>
           </div>
 
@@ -626,6 +729,14 @@ export default function MapaInteligente() {
               <div className="legend-item">
                 <span className="legend-color-dot" style={{ backgroundColor: coresRisco.baixo }}></span>
                 <span>Baixo Risco</span>
+              </div>
+              <div className="legend-item">
+                <span className="legend-color-dot" style={{ backgroundColor: '#3b82f6', borderRadius: '2px' }}></span>
+                <span>Entidade/Unidade</span>
+              </div>
+              <div className="legend-item">
+                <span className="legend-color-dot" style={{ backgroundColor: '#8b5cf6', borderRadius: '2px' }}></span>
+                <span>Empresa Parceira</span>
               </div>
             </div>
           </div>
@@ -694,6 +805,29 @@ export default function MapaInteligente() {
               <option value="masculino">Masculino</option>
               <option value="feminino">Feminino</option>
             </select>
+          </div>
+
+          {/* Select: Jovem (Auto-zoom) */}
+          <div className="map-filter-group-select" style={{ flexGrow: 1 }}>
+            <label htmlFor="select-jovem" className="filter-label-select">Localizar Jovem</label>
+            <div style={{ position: 'relative' }}>
+              <select
+                id="select-jovem"
+                className="filter-select"
+                value={jovemSelecionadoId}
+                onChange={(e) => handleJovemSelect(e.target.value)}
+                style={{ paddingLeft: '2rem' }}
+              >
+                <option value="">Nenhum selecionado</option>
+                {dynamicPontosVulnerabilidade
+                  .sort((a, b) => a.nome.localeCompare(b.nome))
+                  .map(p => (
+                    <option key={p.id} value={p.id}>{p.nome}</option>
+                  ))
+                }
+              </select>
+              <Search size={14} style={{ position: 'absolute', left: '0.6rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-light)', pointerEvents: 'none' }} />
+            </div>
           </div>
 
           {/* Cards Estatísticos Responsivos */}
@@ -783,6 +917,70 @@ export default function MapaInteligente() {
                     <span className="popup-dot"></span>
                     {ponto.risco === 'alto' ? 'Alto Risco (Crítico)' : ponto.risco === 'medio' ? 'Médio Risco' : 'Baixo Risco'}
                   </div>
+                </div>
+              </Tooltip>
+            </CircleMarker>
+          ))}
+
+          {/* Pontos de Equipamentos */}
+          {pontosEquipamentosFiltrados.map((ponto) => (
+            <CircleMarker
+              key={`equip-${ponto.id}`}
+              center={[ponto.lat, ponto.lng]}
+              radius={7}
+              pane="bolinhasPane"
+              pathOptions={{
+                fillColor: '#3b82f6', // blue-500
+                fillOpacity: 1,
+                color: '#ffffff',
+                weight: 2,
+              }}
+            >
+              <Tooltip className="custom-leaflet-tooltip" direction="top" offset={[0, -5]} opacity={1}>
+                <div className="custom-map-popup">
+                  <h3 className="popup-title" style={{ color: '#3b82f6' }}>{ponto.nome}</h3>
+                  <div className="popup-divider"></div>
+                  <p style={{ fontSize: '0.78rem', color: 'var(--color-text-dark)', margin: '0' }}>
+                    Tipo: <strong>{ponto.tipo}</strong>
+                  </p>
+                  <p style={{ fontSize: '0.78rem', color: 'var(--color-text-dark)', margin: '0' }}>
+                    Cidade: <strong>{ponto.cidade}</strong>
+                  </p>
+                </div>
+              </Tooltip>
+            </CircleMarker>
+          ))}
+
+          {/* Pontos de Empresas */}
+          {pontosEmpresasFiltrados.map((ponto) => (
+            <CircleMarker
+              key={`empresa-${ponto.id}`}
+              center={[ponto.lat, ponto.lng]}
+              radius={7}
+              pane="bolinhasPane"
+              pathOptions={{
+                fillColor: '#8b5cf6', // violet-500
+                fillOpacity: 1,
+                color: '#ffffff',
+                weight: 2,
+              }}
+            >
+              <Tooltip className="custom-leaflet-tooltip" direction="top" offset={[0, -5]} opacity={1}>
+                <div className="custom-map-popup">
+                  <h3 className="popup-title" style={{ color: '#8b5cf6' }}>{ponto.nome}</h3>
+                  <div className="popup-divider"></div>
+                  <p style={{ fontSize: '0.78rem', color: 'var(--color-text-dark)', margin: '0' }}>
+                    Empresa Parceira
+                  </p>
+                  <p style={{ fontSize: '0.78rem', color: 'var(--color-text-dark)', margin: '0' }}>
+                    Cidade: <strong>{ponto.cidade}</strong>
+                    {ponto.bairro && (
+                      <>
+                        <br />
+                        Bairro: <strong>{ponto.bairro}</strong>
+                      </>
+                    )}
+                  </p>
                 </div>
               </Tooltip>
             </CircleMarker>

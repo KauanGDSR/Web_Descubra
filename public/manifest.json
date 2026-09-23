@@ -1,7 +1,7 @@
 {
-  "name": "Programa Descubra - Jovem",
-  "short_name": "Descubra",
-  "description": "Aplicativo do Programa Descubra para Jovens Aprendizes.",
+  "name": "DescubraHub - Jovem",
+  "short_name": "DescubraHub",
+  "description": "Aplicativo do DescubraHub para Jovens Aprendizes.",
   "start_url": "/jovem",
   "display": "standalone",
   "background_color": "#ffffff",

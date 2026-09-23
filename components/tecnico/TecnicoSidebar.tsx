@@ -173,7 +173,7 @@ export default function TecnicoSidebar() {
           
           <div className="sidebar-brand">
             <Link href="/" className="sidebar-logo-text" title="Ir para a Página Inicial">
-              Descubra<span>!</span>
+              DescubraHub
             </Link>
             <span className="sidebar-role-badge">
               Painel Técnico

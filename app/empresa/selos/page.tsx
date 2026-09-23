@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useState } from 'react';
 import { 
@@ -14,7 +14,7 @@ type TabType = 'bronze' | 'prata' | 'ouro';
 
 const selosData = {
   bronze: {
-    titulo: 'Selo Bronze — Apoiador Descubra',
+    titulo: 'Selo Bronze â€” Apoiador DescubraHub',
     missao: 'Doar Tempo e Conhecimento',
     nivel: 'Bronze',
     imagem: BronzeSeal,
@@ -23,12 +23,12 @@ const selosData = {
     textBadge: '#d97706',
     tagline: 'A menor barreira de entrada, sem custo financeiro. Ideal para microempresas e MEIs.',
     passos: [
-      'Cadastro Básico: O dono da empresa ou colaborador designado cria o perfil como "Empresa Parceira".',
-      'Oferta de Mentoria: Cadastre disponibilidade de tempo (ex: 2 horas por mês) ou uma "Pílula de Conhecimento".',
+      'Cadastro BÃ¡sico: O dono da empresa ou colaborador designado cria o perfil como "Empresa Parceira".',
+      'Oferta de Mentoria: Cadastre disponibilidade de tempo (ex: 2 horas por mÃªs) ou uma "PÃ­lula de Conhecimento".',
     ],
-    gatilho: 'Completar pelo menos UMA das ações práticas:',
+    gatilho: 'Completar pelo menos UMA das aÃ§Ãµes prÃ¡ticas:',
     gatilhosItens: [
-      'Realizar 2 sessões de mentoria (presencial ou videochamada no app) com jovens na fila, orientando sobre currículo ou profissão.',
+      'Realizar 2 sessÃµes de mentoria (presencial ou videochamada no app) com jovens na fila, orientando sobre currÃ­culo ou profissÃ£o.',
       'Promover 1 dia de Job Shadowing: receber jovens na empresa por uma tarde para observarem o ambiente real de trabalho.',
     ],
     beneficiosPilares: [
@@ -37,110 +37,110 @@ const selosData = {
         cor: '#4f46e5',
         bgCor: 'rgba(79,70,229,0.08)',
         titulo: 'Visibilidade Digital',
-        descricao: 'Perfil da empresa destacado no app com o selo, ganhando prioridade nas recomendações automáticas do sistema para jovens em busca de vagas.'
+        descricao: 'Perfil da empresa destacado no app com o selo, ganhando prioridade nas recomendaÃ§Ãµes automÃ¡ticas do sistema para jovens em busca de vagas.'
       },
       {
         icone: Users,
         cor: '#059669',
         bgCor: 'rgba(5,150,105,0.08)',
         titulo: 'Clima Organizacional',
-        descricao: 'Colaboradores que doam tempo de mentoria sentem maior propósito e satisfação no trabalho — impacto direto na retenção interna.'
+        descricao: 'Colaboradores que doam tempo de mentoria sentem maior propÃ³sito e satisfaÃ§Ã£o no trabalho â€” impacto direto na retenÃ§Ã£o interna.'
       },
       {
         icone: ShieldCheck,
         cor: '#2563eb',
         bgCor: 'rgba(37,99,235,0.08)',
-        titulo: 'Reputação Comunitária',
-        descricao: 'A empresa passa a ser reconhecida como parceira social ativa pela Prefeitura de Pirapora e pelas entidades de assistência (CREAS/CRAS).'
+        titulo: 'ReputaÃ§Ã£o ComunitÃ¡ria',
+        descricao: 'A empresa passa a ser reconhecida como parceira social ativa pela Prefeitura de Pirapora e pelas entidades de assistÃªncia (CREAS/CRAS).'
       },
     ],
     divulgacoes: [
-      '📱 Perfil da empresa publicado como "Apoiador Ativo" no feed de oportunidades do app, visto por jovens e famílias da região.',
-      '📢 Citação da empresa em posts nas redes sociais oficiais do Programa Descubra (Instagram e Facebook da Secretaria Municipal).',
-      '🌐 Logotipo e nome da empresa listados na página "Quem Apoia" do site institucional do Programa Descubra.',
+      'ðŸ“± Perfil da empresa publicado como "Apoiador Ativo" no feed de oportunidades do app, visto por jovens e famÃ­lias da regiÃ£o.',
+      'ðŸ“¢ CitaÃ§Ã£o da empresa em posts nas redes sociais oficiais do DescubraHub (Instagram e Facebook da Secretaria Municipal).',
+      'ðŸŒ Logotipo e nome da empresa listados na pÃ¡gina "Quem Apoia" do site institucional do DescubraHub.',
     ]
   },
   prata: {
-    titulo: 'Selo Prata — Ponte para o Futuro',
+    titulo: 'Selo Prata â€” Ponte para o Futuro',
     missao: 'Gerar Empregabilidade e Renda',
     nivel: 'Prata',
     imagem: PrataSeal,
     corHex: 'var(--color-text-light)',
     bgBadge: 'rgba(100,116,139,0.12)',
     textBadge: '#475569',
-    tagline: 'Foco em gerar o primeiro emprego formal fora das cotas legais obrigatórias.',
+    tagline: 'Foco em gerar o primeiro emprego formal fora das cotas legais obrigatÃ³rias.',
     passos: [
-      'Publicação da Vaga: Divulgue sua oportunidade de contratação diretamente na plataforma de forma simples.',
-      'Triagem Assistida: Aguarde o encaminhamento dos candidatos pré-selecionados pela equipe técnica do CRAS/CREAS.',
+      'PublicaÃ§Ã£o da Vaga: Divulgue sua oportunidade de contrataÃ§Ã£o diretamente na plataforma de forma simples.',
+      'Triagem Assistida: Aguarde o encaminhamento dos candidatos prÃ©-selecionados pela equipe tÃ©cnica do CRAS/CREAS.',
     ],
-    gatilho: 'Ação Prática obrigatória de contratação:',
+    gatilho: 'AÃ§Ã£o PrÃ¡tica obrigatÃ³ria de contrataÃ§Ã£o:',
     gatilhosItens: [
-      'Assinar um contrato de trabalho formal (CLT padrão) ou estágio remunerado com o jovem encaminhado.',
-      'Registrar a contratação na plataforma para validação e homologação do gestor do CREAS.',
+      'Assinar um contrato de trabalho formal (CLT padrÃ£o) ou estÃ¡gio remunerado com o jovem encaminhado.',
+      'Registrar a contrataÃ§Ã£o na plataforma para validaÃ§Ã£o e homologaÃ§Ã£o do gestor do CREAS.',
     ],
     beneficiosPilares: [
       {
         icone: Briefcase,
         cor: '#4f46e5',
         bgCor: 'rgba(79,70,229,0.08)',
-        titulo: 'Mão de Obra Qualificada',
-        descricao: 'Os jovens contratados são pré-selecionados e acompanhados por assistentes sociais, reduzindo o turnover e os custos de recrutamento e seleção.'
+        titulo: 'MÃ£o de Obra Qualificada',
+        descricao: 'Os jovens contratados sÃ£o prÃ©-selecionados e acompanhados por assistentes sociais, reduzindo o turnover e os custos de recrutamento e seleÃ§Ã£o.'
       },
       {
         icone: TrendingUp,
         cor: '#059669',
         bgCor: 'rgba(5,150,105,0.08)',
-        titulo: 'Agenda ESG e Licitações',
-        descricao: 'O selo Prata pode ser utilizado para pontuar em cláusulas de Responsabilidade Social em licitações públicas municipais e estaduais.'
+        titulo: 'Agenda ESG e LicitaÃ§Ãµes',
+        descricao: 'O selo Prata pode ser utilizado para pontuar em clÃ¡usulas de Responsabilidade Social em licitaÃ§Ãµes pÃºblicas municipais e estaduais.'
       },
     ],
     divulgacoes: [
-      '🏷️ Autocolante físico oficial do Programa Descubra enviado para a vitrine da empresa — visibilidade no comércio de rua de Pirapora.',
-      '📸 Post de destaque nas redes sociais oficiais do Programa: "Conheça a empresa que transformou a vida de [Nome do Jovem]!"',
-      '📰 Menção no boletim informativo mensal da Secretaria Municipal de Assistência Social, distribuído a lideranças empresariais da cidade.',
-      '🏅 Certificado digital personalizado para uso em apresentações, site e redes sociais da empresa.',
+      'ðŸ·ï¸ Autocolante fÃ­sico oficial do DescubraHub enviado para a vitrine da empresa â€” visibilidade no comÃ©rcio de rua de Pirapora.',
+      'ðŸ“¸ Post de destaque nas redes sociais oficiais do Programa: "ConheÃ§a a empresa que transformou a vida de [Nome do Jovem]!"',
+      'ðŸ“° MenÃ§Ã£o no boletim informativo mensal da Secretaria Municipal de AssistÃªncia Social, distribuÃ­do a lideranÃ§as empresariais da cidade.',
+      'ðŸ… Certificado digital personalizado para uso em apresentaÃ§Ãµes, site e redes sociais da empresa.',
     ]
   },
   ouro: {
-    titulo: 'Selo Ouro — Transformador Social',
-    missao: 'Abraçar a Causa Principal',
+    titulo: 'Selo Ouro â€” Transformador Social',
+    missao: 'AbraÃ§ar a Causa Principal',
     nivel: 'Ouro',
     imagem: OuroSeal,
     corHex: 'var(--color-yellow)',
     bgBadge: 'rgba(245,158,11,0.12)',
     textBadge: '#b45309',
-    tagline: 'Inclusão intencional de jovens em altíssima vulnerabilidade ou abertura formal de cotas de Aprendizagem.',
+    tagline: 'InclusÃ£o intencional de jovens em altÃ­ssima vulnerabilidade ou abertura formal de cotas de Aprendizagem.',
     passos: [
-      'Alinhamento Estratégico: Apoiar jovens egressos do sistema socioeducativo, de casas de acolhimento ou em situação de trabalho infantil.',
-      'Intencionalidade: Abrir as portas para transformar realidades críticas monitoradas sigilosamente pelo CREAS.',
+      'Alinhamento EstratÃ©gico: Apoiar jovens egressos do sistema socioeducativo, de casas de acolhimento ou em situaÃ§Ã£o de trabalho infantil.',
+      'Intencionalidade: Abrir as portas para transformar realidades crÃ­ticas monitoradas sigilosamente pelo CREAS.',
     ],
-    gatilho: 'Cumprir pelo menos UM critério de alto impacto:',
+    gatilho: 'Cumprir pelo menos UM critÃ©rio de alto impacto:',
     gatilhosItens: [
-      'Opção A: Abrir e preencher vagas formais de Jovem Aprendiz (cota legal com SENAI/SEST SENAT) contratando jovens encaminhados pelo programa.',
-      'Opção B: Contratar intencionalmente jovem de alta vulnerabilidade por meio de encaminhamento confidencial do CREAS.',
+      'OpÃ§Ã£o A: Abrir e preencher vagas formais de Jovem Aprendiz (cota legal com SENAI/SEST SENAT) contratando jovens encaminhados pelo programa.',
+      'OpÃ§Ã£o B: Contratar intencionalmente jovem de alta vulnerabilidade por meio de encaminhamento confidencial do CREAS.',
     ],
     beneficiosPilares: [
       {
         icone: Trophy,
         cor: '#d97706',
         bgCor: 'rgba(217,119,6,0.08)',
-        titulo: 'Honra ao Mérito Público',
-        descricao: 'Reconhecimento pelo Comitê Gestor Interinstitucional (Prefeitura + MPT + Entidades). Convite para cerimônia anual de premiação com cobertura da mídia regional.'
+        titulo: 'Honra ao MÃ©rito PÃºblico',
+        descricao: 'Reconhecimento pelo ComitÃª Gestor Interinstitucional (Prefeitura + MPT + Entidades). Convite para cerimÃ´nia anual de premiaÃ§Ã£o com cobertura da mÃ­dia regional.'
       },
       {
         icone: Megaphone,
         cor: '#7c3aed',
         bgCor: 'rgba(124,58,237,0.08)',
         titulo: 'Case de Sucesso Regional',
-        descricao: 'A empresa é posicionada como referência regional de ESG, abrindo portas para linhas de crédito social do BNDES/BDMG com taxas de juros reduzidas.'
+        descricao: 'A empresa Ã© posicionada como referÃªncia regional de ESG, abrindo portas para linhas de crÃ©dito social do BNDES/BDMG com taxas de juros reduzidas.'
       },
     ],
     divulgacoes: [
-      '🏆 Troféu físico oficial entregue em cerimônia pública anual com autoridades municipais e cobertura jornalística local.',
-      '📺 Reportagem especial no portal de notícias e emissoras locais: "A empresa de Pirapora que transforma o futuro da juventude".',
-      '🎖️ Destaque como "Case de Sucesso" em eventos e feiras de empreendedorismo da região Norte de Minas.',
-      '🌐 Página dedicada no site do Programa Descubra com a história da empresa e depoimentos dos jovens contratados.',
-      '📣 Indicação prioritária pela Prefeitura como empresa de referência social em processos de licitação e parcerias institucionais.',
+      'ðŸ† TrofÃ©u fÃ­sico oficial entregue em cerimÃ´nia pÃºblica anual com autoridades municipais e cobertura jornalÃ­stica local.',
+      'ðŸ“º Reportagem especial no portal de notÃ­cias e emissoras locais: "A empresa de Pirapora que transforma o futuro da juventude".',
+      'ðŸŽ–ï¸ Destaque como "Case de Sucesso" em eventos e feiras de empreendedorismo da regiÃ£o Norte de Minas.',
+      'ðŸŒ PÃ¡gina dedicada no site do Programa Descubra com a histÃ³ria da empresa e depoimentos dos jovens contratados.',
+      'ðŸ“£ IndicaÃ§Ã£o prioritÃ¡ria pela Prefeitura como empresa de referÃªncia social em processos de licitaÃ§Ã£o e parcerias institucionais.',
     ]
   }
 };
@@ -150,9 +150,9 @@ export default function ManualSelosPage() {
   const selo = selosData[activeTab];
 
   const tabs: { key: TabType; label: string; img: any }[] = [
-    { key: 'bronze', label: '🥉 Bronze', img: BronzeSeal },
-    { key: 'prata',  label: '🥈 Prata',  img: PrataSeal },
-    { key: 'ouro',   label: '🥇 Ouro',   img: OuroSeal },
+    { key: 'bronze', label: 'ðŸ¥‰ Bronze', img: BronzeSeal },
+    { key: 'prata',  label: 'ðŸ¥ˆ Prata',  img: PrataSeal },
+    { key: 'ouro',   label: 'ðŸ¥‡ Ouro',   img: OuroSeal },
   ];
 
   return (
@@ -160,9 +160,9 @@ export default function ManualSelosPage() {
       
       {/* Header com as classes nativas do sistema */}
       <div className="admin-form-header">
-        <h2 className="admin-form-title">Manual de Selos — Certificação Social</h2>
+        <h2 className="admin-form-title">Manual de Selos â€” CertificaÃ§Ã£o Social</h2>
         <p className="admin-form-subtitle">
-          Descubra as missões, os benefícios estratégicos e a visibilidade pública que cada nível de engajamento gera para a sua empresa. Quanto mais você apoia a juventude de Pirapora, mais sua marca cresce.
+          Descubra as missÃµes, os benefÃ­cios estratÃ©gicos e a visibilidade pÃºblica que cada nÃ­vel de engajamento gera para a sua empresa. Quanto mais vocÃª apoia a juventude de Pirapora, mais sua marca cresce.
         </p>
       </div>
 
@@ -202,7 +202,7 @@ export default function ManualSelosPage() {
         })}
       </div>
 
-      {/* Bloco de Conteúdo Principal */}
+      {/* Bloco de ConteÃºdo Principal */}
       <div className="report-stat-card" style={{ display: 'block', padding: '2rem', width: '100%', borderTop: `4px solid ${selo.corHex}` }}>
         
         {/* Selo Header */}
@@ -222,7 +222,7 @@ export default function ManualSelosPage() {
           />
           <div className="company-card-title-group" style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
             <span className="company-card-badge" style={{ backgroundColor: selo.bgBadge, color: selo.textBadge, fontWeight: 700, width: 'fit-content' }}>
-              Nível {selo.nivel}
+              NÃ­vel {selo.nivel}
             </span>
             <h3 style={{ fontFamily: 'var(--font-title)', fontSize: '1.3rem', fontWeight: 800, color: 'var(--color-primary)', margin: 0 }}>
               {selo.titulo}
@@ -234,7 +234,7 @@ export default function ManualSelosPage() {
           </div>
         </div>
 
-        {/* Informações detalhadas */}
+        {/* InformaÃ§Ãµes detalhadas */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '2rem' }}>
           
           {/* Coluna Esquerda: Requisitos e Como Conquistar */}
@@ -272,7 +272,7 @@ export default function ManualSelosPage() {
               </div>
             </div>
 
-            {/* Gatilho Prático */}
+            {/* Gatilho PrÃ¡tico */}
             <div style={{ backgroundColor: 'rgba(16,185,129,0.04)', border: '1px solid rgba(16,185,129,0.15)', padding: '1.25rem', borderRadius: '8px' }}>
               <h4 style={{ fontSize: '0.72rem', textTransform: 'uppercase', color: 'var(--color-success)', fontWeight: 700, letterSpacing: '0.04em', marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
                 <Sparkles size={14} />
@@ -292,13 +292,13 @@ export default function ManualSelosPage() {
 
           </div>
 
-          {/* Coluna Direita: Benefícios e Marketing */}
+          {/* Coluna Direita: BenefÃ­cios e Marketing */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
             
             {/* Por que vale a pena */}
             <div style={{ backgroundColor: 'rgba(10,37,64,0.02)', border: '1px solid rgba(10,37,64,0.06)', padding: '1.25rem', borderRadius: '8px' }}>
               <h4 style={{ fontSize: '0.72rem', textTransform: 'uppercase', color: 'var(--color-text-light)', fontWeight: 700, letterSpacing: '0.04em', marginBottom: '0.75rem' }}>
-                Por que vale a pena? (Benefícios)
+                Por que vale a pena? (BenefÃ­cios)
               </h4>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                 {selo.beneficiosPilares.map((pilar, idx) => {
@@ -331,11 +331,11 @@ export default function ManualSelosPage() {
               </div>
             </div>
 
-            {/* Como é divulgado */}
+            {/* Como Ã© divulgado */}
             <div style={{ backgroundColor: 'rgba(124,58,237,0.04)', border: '1px solid rgba(124,58,237,0.15)', padding: '1.25rem', borderRadius: '8px' }}>
               <h4 style={{ fontSize: '0.72rem', textTransform: 'uppercase', color: '#7c3aed', fontWeight: 700, letterSpacing: '0.04em', marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
                 <Newspaper size={14} />
-                Como sua empresa será divulgada
+                Como sua empresa serÃ¡ divulgada
               </h4>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                 {selo.divulgacoes.map((item, idx) => (
@@ -354,29 +354,29 @@ export default function ManualSelosPage() {
 
       </div>
 
-      {/* Grid de Benefícios Gerais */}
+      {/* Grid de BenefÃ­cios Gerais */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.25rem' }}>
         {[
           {
             icon: Scale,
             cor: 'var(--color-error)',
             bgCor: 'rgba(239,68,68,0.08)',
-            titulo: 'Segurança Legal & Fiscal',
-            descricao: 'Cumpra cotas obrigatórias, reduza riscos de autuações do MPT e use o selo como contrapartida em TACs judiciais trabalhistas.'
+            titulo: 'SeguranÃ§a Legal & Fiscal',
+            descricao: 'Cumpra cotas obrigatÃ³rias, reduza riscos de autuaÃ§Ãµes do MPT e use o selo como contrapartida em TACs judiciais trabalhistas.'
           },
           {
             icon: Megaphone,
             cor: '#4f46e5',
             bgCor: 'rgba(79,70,229,0.08)',
             titulo: 'Marketing de Impacto & ESG',
-            descricao: 'Use a chancela do Programa Descubra no seu marketing para atrair o consumidor consciente e se destacar na agenda ESG perante investidores e parceiros.'
+            descricao: 'Use a chancela do DescubraHub no seu marketing para atrair o consumidor consciente e se destacar na agenda ESG perante investidores e parceiros.'
           },
           {
             icon: Trophy,
             cor: 'var(--color-yellow)',
             bgCor: 'rgba(245,158,11,0.08)',
             titulo: 'Reconhecimento & Prioridade',
-            descricao: 'Empresas selos Prata e Ouro são indicadas prioritariamente pela Prefeitura em licitações e parcerias, e ganham acesso a crédito social BNDES/BDMG.'
+            descricao: 'Empresas selos Prata e Ouro sÃ£o indicadas prioritariamente pela Prefeitura em licitaÃ§Ãµes e parcerias, e ganham acesso a crÃ©dito social BNDES/BDMG.'
           }
         ].map((item, idx) => {
           const Icon = item.icon;
@@ -414,18 +414,18 @@ export default function ManualSelosPage() {
             A Jornada da Empresa
           </span>
           <h3 style={{ fontFamily: 'var(--font-title)', fontSize: '1.1rem', fontWeight: 800, color: 'var(--color-primary)', margin: '0.5rem 0 0' }}>
-            Da Intenção ao Impacto Regional
+            Da IntenÃ§Ã£o ao Impacto Regional
           </h3>
           <p style={{ fontSize: '0.75rem', color: 'var(--color-text-light)', fontWeight: 500, margin: 0 }}>
-            Uma linha do tempo de crescimento sustentável junto ao Programa Descubra e à juventude de Pirapora.
+            Uma linha do tempo de crescimento sustentÃ¡vel junto ao DescubraHub e Ã  juventude de Pirapora.
           </p>
         </div>
 
         <div style={{ position: 'relative', display: 'flex', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap' }}>
           {[
-            { img: BronzeSeal, etapa: 'Etapa 1: Apoiador', titulo: 'Doação de Tempo', desc: 'Cadastra-se, doa mentorias e ganha visibilidade digital e comunitária.' },
-            { img: PrataSeal,  etapa: 'Etapa 2: Ponte',    titulo: 'Geração de Renda',    desc: 'Contrata jovem qualificado, ganha o selo físico para vitrine e benefícios fiscais.' },
-            { img: OuroSeal,   etapa: 'Etapa 3: Transformador', titulo: 'Impacto Extremo', desc: 'Inclui jovens em alta vulnerabilidade e recebe Honra ao Mérito público e visibilidade regional.' },
+            { img: BronzeSeal, etapa: 'Etapa 1: Apoiador', titulo: 'DoaÃ§Ã£o de Tempo', desc: 'Cadastra-se, doa mentorias e ganha visibilidade digital e comunitÃ¡ria.' },
+            { img: PrataSeal,  etapa: 'Etapa 2: Ponte',    titulo: 'GeraÃ§Ã£o de Renda',    desc: 'Contrata jovem qualificado, ganha o selo fÃ­sico para vitrine e benefÃ­cios fiscais.' },
+            { img: OuroSeal,   etapa: 'Etapa 3: Transformador', titulo: 'Impacto Extremo', desc: 'Inclui jovens em alta vulnerabilidade e recebe Honra ao MÃ©rito pÃºblico e visibilidade regional.' },
           ].map((ponto, idx) => (
             <div key={idx} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.75rem', textAlign: 'center', flex: '1 1 200px' }}>
               <div style={{
@@ -461,3 +461,4 @@ export default function ManualSelosPage() {
     </div>
   );
 }
+
