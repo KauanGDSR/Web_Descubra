@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { createClient } from '@/utils/supabase/client';
+import LogoutButton from '@/components/ui/LogoutButton';
 
 const TABS = [
   {
@@ -88,6 +89,8 @@ export default function TecnicoSidebar() {
   const router = useRouter();
   const [supabase] = useState(() => createClient());
   const [role, setRole] = useState<string | null>(null);
+  const [isHovered, setIsHovered] = useState(false);
+  const [isMobileOpen, setIsMobileOpen] = useState(false);
 
   useEffect(() => {
     const fetchUserRole = async () => {
@@ -121,28 +124,108 @@ export default function TecnicoSidebar() {
   const isActive = (href: string) =>
     href === '/tecnicos' ? pathname === '/tecnicos' : pathname.startsWith(href);
 
+  const isExpanded = isHovered || isMobileOpen;
+
   return (
-    <aside className="admin-sidebar">
-      <div className="admin-sidebar-header">
-        <h1 className="admin-sidebar-title">
-          Painel Técnico
-        </h1>
-        <p className="admin-sidebar-subtitle">Programa Descubra!</p>
-      </div>
-      <nav className="admin-tabs-nav" aria-label="Navegação do painel">
-        {TABS.map((tab) => (
-          <Link
-            key={tab.href}
-            href={tab.href}
-            className={`admin-tab-btn ${isActive(tab.href) ? 'active' : ''}`}
-            role="tab"
-            aria-selected={isActive(tab.href)}
+    <>
+      {/* Botão flutuante mobile para abrir gaveta */}
+      <button
+        type="button"
+        className="mobile-hamburger-trigger"
+        onClick={() => setIsMobileOpen(!isMobileOpen)}
+        aria-label="Abrir Menu de Navegação"
+        title="Menu"
+      >
+        <span className="hamburger-line" />
+        <span className="hamburger-line" />
+        <span className="hamburger-line" />
+      </button>
+
+      {/* Backdrop escuro no mobile */}
+      {isMobileOpen && (
+        <div
+          className="sidebar-mobile-backdrop"
+          onClick={() => setIsMobileOpen(false)}
+          aria-hidden="true"
+        />
+      )}
+
+      {/* Barra Lateral estilo Hambúrguer com expansão ao passar o mouse */}
+      <aside
+        className={`admin-hover-sidebar ${isExpanded ? 'expanded' : ''} ${isMobileOpen ? 'mobile-open' : ''}`}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+        aria-label="Menu Lateral"
+      >
+        {/* Cabeçalho do menu com ícone hambúrguer e branding */}
+        <div className="sidebar-top-bar">
+          <button
+            type="button"
+            className="sidebar-hamburger-btn"
+            onClick={() => setIsMobileOpen(!isMobileOpen)}
+            aria-label="Menu"
+            title={isExpanded ? 'Recolher Menu' : 'Expandir Menu'}
           >
-            {tab.icon}
-            {tab.label}
-          </Link>
-        ))}
-      </nav>
-    </aside>
+            <span className="hamburger-line" />
+            <span className="hamburger-line" />
+            <span className="hamburger-line" />
+          </button>
+          
+          <div className="sidebar-brand">
+            <Link href="/" className="sidebar-logo-text" title="Ir para a Página Inicial">
+              Descubra<span>!</span>
+            </Link>
+            <span className="sidebar-role-badge">
+              Painel Técnico
+            </span>
+          </div>
+        </div>
+
+        {/* Lista de abas de navegação */}
+        <nav className="sidebar-nav-container" aria-label="Navegação do painel">
+          {TABS.map((tab) => {
+            const active = isActive(tab.href);
+            return (
+              <Link
+                key={tab.href}
+                href={tab.href}
+                className={`sidebar-nav-item ${active ? 'active' : ''}`}
+                role="tab"
+                aria-selected={active}
+                title={!isExpanded ? tab.label : undefined}
+                onClick={() => setIsMobileOpen(false)}
+              >
+                {active && <span className="sidebar-active-indicator" />}
+                <div className="sidebar-item-icon">
+                  {tab.icon}
+                </div>
+                <span className="sidebar-item-label">
+                  {tab.label}
+                </span>
+              </Link>
+            );
+          })}
+        </nav>
+
+        {/* Rodapé da lateral com Botão de Sair */}
+        <div className="sidebar-footer">
+          <LogoutButton
+            className="sidebar-logout-btn"
+            style={{ width: '100%' }}
+          >
+            <div className="sidebar-logout-icon" title={!isExpanded ? 'Sair do sistema' : undefined}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                <polyline points="16 17 21 12 16 7"/>
+                <line x1="21" y1="12" x2="9" y2="12"/>
+              </svg>
+            </div>
+            <span className="sidebar-logout-label">
+              Sair
+            </span>
+          </LogoutButton>
+        </div>
+      </aside>
+    </>
   );
 }
