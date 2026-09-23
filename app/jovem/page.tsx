@@ -1,18 +1,78 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Briefcase, BookOpen, Clock, Target, Star } from 'lucide-react';
+import { Briefcase, BookOpen, Clock, Target, Star, Loader2 } from 'lucide-react';
 import Link from 'next/link';
+import { useEffect, useState } from 'react';
+import { createClient } from '@/utils/supabase/client';
 
 export default function JovemDashboard() {
+  const [jovemName, setJovemName] = useState('Jovem');
+  const [statusText, setStatusText] = useState('Carregando seu perfil...');
+  const [vagasCount, setVagasCount] = useState(0);
+  const [progresso, setProgresso] = useState(0);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      const supabase = createClient();
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (session?.user?.id) {
+          // Fetch Jovem Profile
+          const { data: jovemData } = await supabase
+            .from('jovens')
+            .select('nome_completo, nome_social, passou_pre_aprendizagem, pontuacao_atual')
+            .eq('id', session.user.id)
+            .single();
+
+          if (jovemData) {
+            const displayName = jovemData.nome_social || jovemData.nome_completo || 'Jovem';
+            // Pega apenas o primeiro nome
+            setJovemName(displayName.split(' ')[0]);
+            
+            setStatusText(jovemData.passou_pre_aprendizagem ? 'Apto para Vagas' : 'Em Capacitação Inicial');
+            
+            // Um progresso calculado de forma simples como exemplo:
+            setProgresso(jovemData.pontuacao_atual > 0 ? Math.min(100, jovemData.pontuacao_atual) : 15);
+          }
+        }
+
+        // Fetch Total Vagas Disponíveis
+        const { count } = await supabase
+          .from('vagas_disponiveis')
+          .select('*', { count: 'exact', head: true });
+          
+        setVagasCount(count || 0);
+
+      } catch (error) {
+        console.error('Error fetching dashboard data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDashboardData();
+  }, []);
+
+  if (loading) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '60vh', flexDirection: 'column', gap: '1rem' }}>
+        <Loader2 className="animate-spin" size={40} color="var(--color-primary)" />
+        <p style={{ color: 'var(--color-text-light)' }}>Carregando seus dados...</p>
+      </div>
+    );
+  }
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
       <header>
         <h2 style={{ fontSize: '1.8rem', color: 'var(--color-primary)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          Olá, João! <Star size={24} color="#f59e0b" fill="#f59e0b" />
+          Olá, {jovemName}! <Star size={24} color="#f59e0b" fill="#f59e0b" />
         </h2>
         <p style={{ color: 'var(--color-text)', marginTop: '0.5rem' }}>
-          Bem-vindo ao seu espaço no DescubraHub. Você está <strong>Em Capacitação</strong>.
+          Bem-vindo ao seu espaço no DescubraHub. Você está <strong>{statusText}</strong>.
         </p>
       </header>
 
@@ -21,15 +81,15 @@ export default function JovemDashboard() {
           <div style={{ ...iconWrapperStyle, backgroundColor: '#e0f2fe', color: '#0284c7' }}>
             <Briefcase size={24} />
           </div>
-          <h3 style={cardTitleStyle}>2 Vagas</h3>
-          <p style={cardSubtitleStyle}>Candidaturas Ativas</p>
+          <h3 style={cardTitleStyle}>{vagasCount} Vagas</h3>
+          <p style={cardSubtitleStyle}>Disponíveis na Plataforma</p>
         </motion.div>
         
         <motion.div whileHover={{ scale: 1.02 }} style={cardStyle}>
           <div style={{ ...iconWrapperStyle, backgroundColor: '#dcfce7', color: '#16a34a' }}>
             <BookOpen size={24} />
           </div>
-          <h3 style={cardTitleStyle}>3 Cursos</h3>
+          <h3 style={cardTitleStyle}>0 Cursos</h3>
           <p style={cardSubtitleStyle}>Concluídos</p>
         </motion.div>
 
@@ -37,7 +97,7 @@ export default function JovemDashboard() {
           <div style={{ ...iconWrapperStyle, backgroundColor: '#ffedd5', color: '#ea580c' }}>
             <Target size={24} />
           </div>
-          <h3 style={cardTitleStyle}>85%</h3>
+          <h3 style={cardTitleStyle}>{progresso}%</h3>
           <p style={cardSubtitleStyle}>Seu Progresso Atual</p>
         </motion.div>
       </div>
@@ -51,8 +111,8 @@ export default function JovemDashboard() {
                 <Clock size={18} color="var(--color-primary)" />
               </div>
               <div>
-                <strong style={{ display: 'block', fontSize: '0.95rem' }}>Entrevista - Banco do Brasil</strong>
-                <span style={{ fontSize: '0.85rem', color: '#64748b' }}>Amanhã, às 14:00 (Online)</span>
+                <strong style={{ display: 'block', fontSize: '0.95rem' }}>Atualize seu Perfil</strong>
+                <span style={{ fontSize: '0.85rem', color: '#64748b' }}>Complete suas informações para acessar vagas</span>
               </div>
             </li>
             <li style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
@@ -60,8 +120,8 @@ export default function JovemDashboard() {
                 <BookOpen size={18} color="var(--color-primary)" />
               </div>
               <div>
-                <strong style={{ display: 'block', fontSize: '0.95rem' }}>Módulo 3: Ética no Trabalho</strong>
-                <span style={{ fontSize: '0.85rem', color: '#64748b' }}>Prazo: 15 de Outubro</span>
+                <strong style={{ display: 'block', fontSize: '0.95rem' }}>Confira as Vagas Disponíveis</strong>
+                <span style={{ fontSize: '0.85rem', color: '#64748b' }}>Mural com {vagasCount} oportunidades</span>
               </div>
             </li>
           </ul>
@@ -72,7 +132,7 @@ export default function JovemDashboard() {
 
         <section style={{ background: 'linear-gradient(135deg, var(--color-primary), #1a3b5c)', padding: '1.5rem', borderRadius: '1rem', color: '#fff' }}>
           <h3 style={{ fontSize: '1.2rem', marginBottom: '0.5rem', color: '#fff' }}>Mural de Vagas</h3>
-          <p style={{ fontSize: '0.9rem', marginBottom: '1.5rem', opacity: 0.9 }}>Você tem 5 novas oportunidades compatíveis com seu perfil!</p>
+          <p style={{ fontSize: '0.9rem', marginBottom: '1.5rem', opacity: 0.9 }}>Você tem {vagasCount} oportunidades no mural, confira!</p>
           <Link href="/jovem/vagas" style={{ display: 'inline-block', padding: '0.75rem 1.5rem', background: '#fff', color: 'var(--color-primary)', borderRadius: '2rem', fontWeight: 600, fontSize: '0.9rem' }}>
             Ver Oportunidades
           </Link>
