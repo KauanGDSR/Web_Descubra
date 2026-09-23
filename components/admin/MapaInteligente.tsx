@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, useRef } from 'react';
-import { MapContainer, TileLayer, GeoJSON, CircleMarker, Popup, Tooltip, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, GeoJSON, CircleMarker, Popup, Tooltip, useMap, ZoomControl } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { createClient } from '@/utils/supabase/client';
@@ -385,6 +385,7 @@ export default function MapaInteligente() {
   }
 
   // Pontos para entidades formadoras
+  // Tenta ler o bairro do localStorage (salvo pelo ReferenceUnitTab)
   const pontosEquipamentos: any[] = [];
   equipamentos.forEach(eq => {
     const cidade = eq.cidades?.nome || 'Pirapora';
@@ -392,14 +393,36 @@ export default function MapaInteligente() {
     let baseLng = -44.922;
     if (cidade === 'Buritizeiro') { baseLat = -17.3522; baseLng = -44.9654; }
     else if (cidade === 'Jequitaí') { baseLat = -17.2255; baseLng = -44.4352; }
-    
-    // Jitter determinístico
+    else if (cidade === 'Pirapora') {
+      // Tenta ler bairro salvo localmente
+      let bairroLocal = '';
+      try {
+        const stored = typeof window !== 'undefined'
+          ? localStorage.getItem(`descubra_equipamentos_ext_${eq.id}`)
+          : null;
+        if (stored) {
+          const ext = JSON.parse(stored);
+          bairroLocal = ext.bairro || '';
+        }
+      } catch (_) {}
+
+      if (bairroLocal) {
+        const bairroNorm = normalizarNomeBairro(bairroLocal);
+        const coordBairro = coordenadasBairros[bairroNorm];
+        if (coordBairro) {
+          baseLat = coordBairro[0];
+          baseLng = coordBairro[1];
+        }
+      }
+    }
+
+    // Jitter determinístico para não sobrepor pontos do mesmo bairro
     let hash = 0;
     const idStr = eq.id || '';
     for (let idx = 0; idx < idStr.length; idx++) {
       hash = idStr.charCodeAt(idx) + ((hash << 5) - hash);
     }
-    const offsetScale = 0.005;
+    const offsetScale = 0.003;
     const latOffset = ((hash & 0xFF) / 255 - 0.5) * offsetScale;
     const lngOffset = (((hash >> 8) & 0xFF) / 255 - 0.5) * offsetScale;
 
@@ -857,8 +880,11 @@ export default function MapaInteligente() {
         <MapContainer
           center={mapCenter}
           zoom={mapZoom}
+          zoomControl={false}
           style={{ height: '100%', width: '100%', outline: 'none' }}
         >
+          {/* Controle de zoom no lado direito para não sobrepor a sidebar */}
+          <ZoomControl position="topright" />
           {/* Controlador de Centro/Zoom Dinâmico */}
           <ControladorMapa centro={mapCenter} zoom={mapZoom} />
 
