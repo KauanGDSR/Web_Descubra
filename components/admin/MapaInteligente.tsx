@@ -893,6 +893,12 @@ export default function MapaInteligente() {
                 color: '#ffffff',
                 weight: 1.5,
               }}
+              eventHandlers={{
+                click: () => {
+                  setMapCenter([ponto.lat, ponto.lng]);
+                  setMapZoom(17);
+                },
+              }}
             >
               <Tooltip className="custom-leaflet-tooltip" direction="top" offset={[0, -5]} opacity={1}>
                 <div className="custom-map-popup">
@@ -935,6 +941,12 @@ export default function MapaInteligente() {
                 color: '#ffffff',
                 weight: 2,
               }}
+              eventHandlers={{
+                click: () => {
+                  setMapCenter([ponto.lat, ponto.lng]);
+                  setMapZoom(17);
+                },
+              }}
             >
               <Tooltip className="custom-leaflet-tooltip" direction="top" offset={[0, -5]} opacity={1}>
                 <div className="custom-map-popup">
@@ -963,6 +975,12 @@ export default function MapaInteligente() {
                 fillOpacity: 1,
                 color: '#ffffff',
                 weight: 2,
+              }}
+              eventHandlers={{
+                click: () => {
+                  setMapCenter([ponto.lat, ponto.lng]);
+                  setMapZoom(17);
+                },
               }}
             >
               <Tooltip className="custom-leaflet-tooltip" direction="top" offset={[0, -5]} opacity={1}>
