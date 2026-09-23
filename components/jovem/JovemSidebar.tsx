@@ -21,20 +21,62 @@ export default function JovemSidebar() {
   const pathname = usePathname();
   const [isExpanded, setIsExpanded] = useState(false);
 
+  const [isMobileOpen, setIsMobileOpen] = useState(false);
+
   const isActive = (href: string) =>
     href === '/jovem' ? pathname === '/jovem' : pathname.startsWith(href);
 
   return (
     <>
+      {/* Botão Hambúrguer Mobile Flutuante */}
+      <button
+        type="button"
+        className="mobile-hamburger-trigger"
+        onClick={() => setIsMobileOpen(true)}
+        aria-label="Abrir Menu de Navegação"
+        title="Menu"
+      >
+        <span className="hamburger-line" />
+        <span className="hamburger-line" />
+        <span className="hamburger-line" />
+      </button>
+
+      {/* Backdrop escuro no mobile */}
+      {isMobileOpen && (
+        <div
+          className="sidebar-mobile-backdrop"
+          onClick={() => setIsMobileOpen(false)}
+          aria-hidden="true"
+        />
+      )}
+
       <div className="sidebar-spacer" aria-hidden="true" />
+      
       <aside 
-        className={`admin-hover-sidebar ${isExpanded ? 'expanded' : ''}`}
+        className={`admin-hover-sidebar ${isExpanded ? 'expanded' : ''} ${isMobileOpen ? 'mobile-open' : ''}`}
         onMouseEnter={() => setIsExpanded(true)}
         onMouseLeave={() => setIsExpanded(false)}
+        aria-label="Menu Lateral"
       >
-        <div className="sidebar-brand">
-          <div className="sidebar-brand-icon">D</div>
-          <span className="sidebar-brand-text">DescubraHub</span>
+        {/* Cabeçalho do menu com ícone hambúrguer e branding */}
+        <div className="sidebar-top-bar">
+          <button
+            type="button"
+            className="sidebar-hamburger-btn"
+            onClick={() => setIsMobileOpen(!isMobileOpen)}
+            aria-label="Menu"
+            title={isExpanded ? 'Recolher Menu' : 'Expandir Menu'}
+          >
+            <span className="hamburger-line" />
+            <span className="hamburger-line" />
+            <span className="hamburger-line" />
+          </button>
+          
+          <div className="sidebar-brand">
+            <Link href="/" className="sidebar-logo-text" title="Ir para a Página Inicial">
+              Descubra<span>Hub</span>
+            </Link>
+          </div>
         </div>
 
         <nav className="sidebar-nav" aria-label="Navegação do Jovem">
