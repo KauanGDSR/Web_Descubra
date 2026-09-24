@@ -16,8 +16,8 @@ export default function LoginPage() {
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [authErrorMsg, setAuthErrorMsg] = useState<string | null>(null);
   const [redirectPath, setRedirectPath] = useState('/admin');
-  // Acesso Rápido só está disponível em desenvolvimento
-  const isDev = process.env.NODE_ENV === 'development';
+  // Acesso Rápido disponível para testes e demonstração do sistema
+  const isDev = true;
 
   const loginWithCredentials = async (targetEmail: string, targetPassword: string) => {
     setIsLoggingIn(true);
@@ -40,37 +40,42 @@ export default function LoginPage() {
       const user = signInData?.user;
       let targetPath = '/admin';
       if (user) {
-        // Primeiro verifica se o usuário é um técnico ou administrador
-        const { data: profile } = await supabase
-          .from('tecnicos')
-          .select('cargo')
-          .eq('id', user.id)
-          .single();
-        
-        if (profile && profile.cargo === 'tecnico') {
-          targetPath = '/tecnicos';
-        } else if (profile && profile.cargo === 'admin') {
-          targetPath = '/admin';
+        // Se for o usuário jovem cadastrado para a área do aluno
+        if (user.email === 'jovem@descubra.com' || user.email?.includes('jovem')) {
+          targetPath = '/jovem';
         } else {
-          // Caso contrário, verifica se é uma empresa parceira cadastrada
-          const { data: company } = await supabase
-            .from('empresas_parceiras')
-            .select('id')
+          // Primeiro verifica se o usuário é um técnico ou administrador
+          const { data: profile } = await supabase
+            .from('tecnicos')
+            .select('cargo')
             .eq('id', user.id)
             .single();
           
-          if (company) {
-            targetPath = '/empresa';
+          if (profile && profile.cargo === 'tecnico') {
+            targetPath = '/tecnicos';
+          } else if (profile && profile.cargo === 'admin') {
+            targetPath = '/admin';
           } else {
-            // Verifica se é um Jovem Aprendiz
-            const { data: jovem } = await supabase
-              .from('jovens')
+            // Caso contrário, verifica se é uma empresa parceira cadastrada
+            const { data: company } = await supabase
+              .from('empresas_parceiras')
               .select('id')
               .eq('id', user.id)
               .single();
             
-            if (jovem) {
-              targetPath = '/jovem';
+            if (company) {
+              targetPath = '/empresa';
+            } else {
+              // Verifica se é um Jovem Aprendiz
+              const { data: jovem } = await supabase
+                .from('jovens')
+                .select('id')
+                .eq('id', user.id)
+                .single();
+              
+              if (jovem) {
+                targetPath = '/jovem';
+              }
             }
           }
         }
@@ -196,7 +201,7 @@ export default function LoginPage() {
           {isDev && (
             <div className="login-quick-access">
               <div className="quick-access-divider">
-                <span>Acesso Rápido (Dev)</span>
+                <span>Acesso Rápido para Demonstração</span>
               </div>
               <div className="quick-access-buttons">
                 <button
@@ -230,6 +235,17 @@ export default function LoginPage() {
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"/><line x1="9" y1="22" x2="9" y2="16"/><line x1="9" y1="16" x2="15" y2="16"/><line x1="15" y1="16" x2="15" y2="22"/><line x1="9" y1="8" x2="9.01" y2="8"/><line x1="9" y1="12" x2="9.01" y2="12"/><line x1="15" y1="8" x2="15.01" y2="8"/><line x1="15" y1="12" x2="15.01" y2="12"/></svg>
                   <span className="quick-access-role">Empresa</span>
                   <span className="quick-access-user">Five for All</span>
+                </button>
+
+                <button
+                  type="button"
+                  className="btn-quick-login"
+                  onClick={() => handleQuickAccess('jovem@descubra.com')}
+                  title="Acessar como Jovem (jovem@descubra.com)"
+                >
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                  <span className="quick-access-role">Jovem</span>
+                  <span className="quick-access-user">Jovem Aprendiz</span>
                 </button>
               </div>
             </div>
