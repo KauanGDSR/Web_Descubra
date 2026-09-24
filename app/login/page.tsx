@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import LoadingScreen from '@/components/ui/LoadingScreen';
@@ -18,6 +18,14 @@ export default function LoginPage() {
   const [redirectPath, setRedirectPath] = useState('/admin');
   // Acesso Rápido disponível para testes e demonstração do sistema
   const isDev = true;
+
+  // Pré-carrega as rotas principais em segundo plano para que a transição seja instantânea
+  useEffect(() => {
+    router.prefetch('/jovem');
+    router.prefetch('/admin');
+    router.prefetch('/tecnicos');
+    router.prefetch('/empresa');
+  }, [router]);
 
   const loginWithCredentials = async (targetEmail: string, targetPassword: string) => {
     setIsLoggingIn(true);
@@ -82,7 +90,7 @@ export default function LoginPage() {
       }
       
       setRedirectPath(targetPath);
-      // Permite que o componente LoadingScreen execute a animação completa antes do redirecionamento
+      router.prefetch(targetPath);
     } catch (err: any) {
       setIsLoggingIn(false);
       setAuthErrorMsg('Erro inesperado ao realizar login.');
@@ -124,9 +132,12 @@ export default function LoginPage() {
   return (
     <>
       {isLoggingIn && (
-        <LoadingScreen durationMs={3000} onComplete={() => router.push(redirectPath)} />
+        <LoadingScreen durationMs={2400} onComplete={() => router.replace(redirectPath)} />
       )}
-      <div className="login-container">
+      <div 
+        className="login-container"
+        style={isLoggingIn ? { display: 'none' } : undefined}
+      >
       {/* FORM PANEL */}
       <main className="login-panel-form">
         <nav className="login-header-nav" aria-label="Navegação de retorno">

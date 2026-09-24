@@ -40,29 +40,36 @@ export default function LoadingScreen({ onComplete, durationMs }: { onComplete?:
   // Progress simulation
   useEffect(() => {
     let current = 0;
-    const intervalMs = 100;
+    const intervalMs = 40;
     
-    // If durationMs is provided, calculate exact increment per tick to finish in durationMs.
-    // Otherwise, simulate a random bumpy progress that finishes in ~4-5 seconds.
+    // Se durationMs for informado, calcula incremento suave a cada tick.
     const increment = durationMs ? (100 / (durationMs / intervalMs)) : 0;
 
     const interval = setInterval(() => {
       if (durationMs) {
         current += increment;
       } else {
-        current += Math.random() * 6; // random slow progress
+        current += Math.random() * 6; // progresso simulado padrão
       }
 
       if (current >= 100) {
         current = 100;
         clearInterval(interval);
-        setTimeout(() => setIsExiting(true), durationMs ? 200 : 600);
+        setProgress(100);
+        
+        // Redireciona imediatamente ao completar 100% da barra sem retornar à tela de login
+        if (onComplete) {
+          onComplete();
+        } else {
+          setTimeout(() => setIsExiting(true), 200);
+        }
+      } else {
+        setProgress(Math.min(current, 100));
       }
-      setProgress(Math.min(current, 100));
     }, intervalMs);
 
     return () => clearInterval(interval);
-  }, [durationMs]);
+  }, [durationMs, onComplete]);
 
   // "DescubraHub" text characters
   const word = "DescubraHub".split('');
