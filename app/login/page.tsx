@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import LoadingScreen from '@/components/ui/LoadingScreen';
@@ -15,22 +15,15 @@ export default function LoginPage() {
   const [errors, setErrors] = useState<{ email?: boolean; password?: boolean }>({});
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [authErrorMsg, setAuthErrorMsg] = useState<string | null>(null);
-  const [redirectPath, setRedirectPath] = useState('/admin');
   // Acesso Rápido disponível para testes e demonstração do sistema
   const isDev = true;
-
-  // Pré-carrega as rotas principais em segundo plano para que a transição seja instantânea
-  useEffect(() => {
-    router.prefetch('/jovem');
-    router.prefetch('/admin');
-    router.prefetch('/tecnicos');
-    router.prefetch('/empresa');
-  }, [router]);
 
   const loginWithCredentials = async (targetEmail: string, targetPassword: string) => {
     setIsLoggingIn(true);
     setAuthErrorMsg(null);
     setErrors({});
+    const startTime = Date.now();
+    const MIN_ANIMATION_MS = 2200;
     
     try {
       const { data: signInData, error } = await supabase.auth.signInWithPassword({
@@ -89,8 +82,13 @@ export default function LoginPage() {
         }
       }
       
-      setRedirectPath(targetPath);
-      router.prefetch(targetPath);
+      const elapsed = Date.now() - startTime;
+      const remaining = Math.max(0, MIN_ANIMATION_MS - elapsed);
+
+      setTimeout(() => {
+        window.location.href = targetPath;
+      }, remaining);
+
     } catch (err: any) {
       setIsLoggingIn(false);
       setAuthErrorMsg('Erro inesperado ao realizar login.');
@@ -132,7 +130,7 @@ export default function LoginPage() {
   return (
     <>
       {isLoggingIn && (
-        <LoadingScreen durationMs={2400} onComplete={() => router.replace(redirectPath)} />
+        <LoadingScreen durationMs={2200} />
       )}
       <div 
         className="login-container"

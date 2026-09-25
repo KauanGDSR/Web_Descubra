@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
 
 const PHRASES = [
@@ -28,6 +28,8 @@ export default function LoadingScreen({ onComplete, durationMs }: { onComplete?:
   const [progress, setProgress] = useState(0);
   const [phraseIdx, setPhraseIdx] = useState(0);
   const [isExiting, setIsExiting] = useState(false);
+  const onCompleteRef = useRef(onComplete);
+  onCompleteRef.current = onComplete;
 
   // Text cycling
   useEffect(() => {
@@ -57,9 +59,8 @@ export default function LoadingScreen({ onComplete, durationMs }: { onComplete?:
         clearInterval(interval);
         setProgress(100);
         
-        // Redireciona imediatamente ao completar 100% da barra sem retornar à tela de login
-        if (onComplete) {
-          onComplete();
+        if (onCompleteRef.current) {
+          onCompleteRef.current();
         } else {
           setTimeout(() => setIsExiting(true), 200);
         }
@@ -69,7 +70,7 @@ export default function LoadingScreen({ onComplete, durationMs }: { onComplete?:
     }, intervalMs);
 
     return () => clearInterval(interval);
-  }, [durationMs, onComplete]);
+  }, [durationMs]);
 
   // "DescubraHub" text characters
   const word = "DescubraHub".split('');
