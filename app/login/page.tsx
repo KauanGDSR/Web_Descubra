@@ -99,7 +99,7 @@ export default function LoginPage() {
     e.preventDefault();
     const newErrors: typeof errors = {};
     if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) newErrors.email = true;
-    if (!password || password.length < 8) newErrors.password = true;
+    if (!password) newErrors.password = true;
     if (Object.keys(newErrors).length) { setErrors(newErrors); return; }
     
     await loginWithCredentials(email, password);
