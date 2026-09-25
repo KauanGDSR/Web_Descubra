@@ -45,7 +45,7 @@ const MODAL_DATA: Record<JoinCategory, ModalContent> = {
     title: 'Adesão de Empresas ao DescubraHub',
     subtitle: 'Inclusão produtiva com conformidade legal, incentivos tributários e alto impacto social.',
     leadText:
-      'O DescubraHub conecta sua organização a adolescentes e jovens em vulnerabilidade social extrema, oferecendo suporte técnico especializado para contratação protegida, cumprimento de cotas e formação profissional.',
+      'O DescubraHub conecta sua organização a adolescentes e jovens em vulnerabilidade social, oferecendo suporte técnico especializado para contratação protegida, cumprimento de cotas e formação profissional.',
     stepsTitle: 'Como funciona o processo de contratação',
     steps: [
       {

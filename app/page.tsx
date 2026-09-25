@@ -77,12 +77,20 @@ function HeroSection() {
           <p className="hero-subtitle">O DescubraHub abre caminhos reais para o mundo do trabalho protegido para adolescentes e jovens em Minas Gerais.</p>
           <div className="hero-actions">
             <a href="#join" className="btn btn-primary" id="cta-hero">Faça parte da nossa rede</a>
-            <button className="btn-play-wrapper" id="btn-video" aria-label="Conheça o Programa">
+            <a
+              href="https://www.youtube.com/@ProgramaDescubra"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn-play-wrapper"
+              id="btn-video"
+              aria-label="Conheça o Programa no YouTube"
+              title="Assistir aos vídeos do Programa Descubra no YouTube"
+            >
               <span className="btn-play-circle" role="presentation">
                 <svg width="14" height="16" viewBox="0 0 14 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M13.3333 8L1.33333 14.9282L1.33333 1.0718L13.3333 8Z"/></svg>
               </span>
               Conheça o Programa
-            </button>
+            </a>
           </div>
         </div>
         <div className="hero-image-container">
@@ -292,6 +300,41 @@ function JoinSection() {
 // ===================== FOOTER =====================
 const PARTNERS = ['MPMG', 'TRT-MG', 'SEDESE', 'SENAI', 'SENAC', 'CIEE', 'ASSPROM', 'REDE CIDADÃ'];
 
+const SOCIAL_LINKS = [
+  {
+    label: 'Instagram',
+    href: 'https://www.instagram.com/programadescubra',
+    icon: (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
+        <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
+        <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
+      </svg>
+    ),
+  },
+  {
+    label: 'LinkedIn',
+    href: 'https://www.linkedin.com/company/programa-descubra',
+    icon: (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z" />
+        <rect x="2" y="9" width="4" height="12" />
+        <circle cx="4" cy="4" r="2" />
+      </svg>
+    ),
+  },
+  {
+    label: 'YouTube',
+    href: 'https://www.youtube.com/@ProgramaDescubra',
+    icon: (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z" />
+        <polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02" fill="currentColor" />
+      </svg>
+    ),
+  },
+];
+
 function Footer() {
   return (
     <footer className="footer" id="contacts">
@@ -314,9 +357,17 @@ function Footer() {
           <div className="footer-logo-descubra">DescubraHub</div>
           <p className="footer-copy">© 2026 DescubraHub - Cooperação Interinstitucional de Minas Gerais. Todos os direitos reservados.</p>
           <div className="footer-socials">
-            {[{ label: 'LinkedIn', href: 'https://linkedin.com' }, { label: 'Instagram', href: 'https://instagram.com' }, { label: 'YouTube', href: 'https://youtube.com' }].map((s) => (
-              <a key={s.label} href={s.href} target="_blank" rel="noopener noreferrer" className="footer-social-link" aria-label={`Acessar ${s.label}`}>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+            {SOCIAL_LINKS.map((s) => (
+              <a
+                key={s.label}
+                href={s.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="footer-social-link"
+                aria-label={`Acessar canal do ${s.label} do Programa Descubra`}
+                title={`${s.label} - Programa Descubra`}
+              >
+                {s.icon}
               </a>
             ))}
           </div>
