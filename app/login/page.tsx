@@ -106,9 +106,10 @@ export default function LoginPage() {
   };
 
   const handleQuickAccess = async (quickEmail: string) => {
+    const pwd = quickEmail === 'admin@descubra.com' ? 'AdminDescubra2026!' : '123456';
     setEmail(quickEmail);
-    setPassword('123456');
-    await loginWithCredentials(quickEmail, '123456');
+    setPassword(pwd);
+    await loginWithCredentials(quickEmail, pwd);
   };
 
   const handleForgot = async (e: React.MouseEvent) => {
