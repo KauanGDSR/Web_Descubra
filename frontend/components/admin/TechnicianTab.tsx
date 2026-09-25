@@ -287,7 +287,7 @@ export default function TechnicianTab() {
                 </div>
                 <div className="form-group">
                   <label className="form-label">Senha de Acesso</label>
-                  <input className="form-control" type="password" value={form.password} onChange={set('password')} placeholder="Min. 6 caracteres" required />
+                  <input className="form-control" type="password" value={form.password} onChange={set('password')} placeholder="Min. 8 caracteres" required />
                 </div>
               </>
             )}

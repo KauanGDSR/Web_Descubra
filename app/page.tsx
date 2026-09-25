@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import JoinModal, { JoinCategory } from '@/frontend/components/landing/JoinModal';
 
 // ===================== HEADER =====================
 function Header() {
@@ -206,13 +207,43 @@ function StatsSection() {
 }
 
 // ===================== JOIN =====================
-const JOIN_CARDS = [
-  { title: 'Empresas', desc: 'Ofereça vagas de Jovem Aprendiz, Estágio e CLT(+18), promovendo a inclusão produtiva.', cls: 'join-card-1', iconCls: 'join-icon-1', btn: 'btn-primary' },
-  { title: 'Municípios', desc: 'Fortaleça e articule a rede municipal de proteção infantojuvenil em seu território.', cls: 'join-card-2', iconCls: 'join-icon-2', btn: 'btn-secondary' },
-  { title: 'Instituições Parceiras', desc: 'Oferte cursos e oficinas de qualificação profissional alinhados às diretrizes do programa.', cls: 'join-card-3', iconCls: 'join-icon-3', btn: 'btn-outline' },
+const JOIN_CARDS: {
+  id: JoinCategory;
+  title: string;
+  desc: string;
+  cls: string;
+  iconCls: string;
+  btn: string;
+}[] = [
+  {
+    id: 'empresas',
+    title: 'Empresas',
+    desc: 'Ofereça vagas de Jovem Aprendiz, Estágio e CLT(+18), promovendo a inclusão produtiva.',
+    cls: 'join-card-1',
+    iconCls: 'join-icon-1',
+    btn: 'btn-primary',
+  },
+  {
+    id: 'municipios',
+    title: 'Municípios',
+    desc: 'Fortaleça e articule a rede municipal de proteção infantojuvenil em seu território.',
+    cls: 'join-card-2',
+    iconCls: 'join-icon-2',
+    btn: 'btn-secondary',
+  },
+  {
+    id: 'instituicoes',
+    title: 'Instituições Parceiras',
+    desc: 'Oferte cursos e oficinas de qualificação profissional alinhados às diretrizes do programa.',
+    cls: 'join-card-3',
+    iconCls: 'join-icon-3',
+    btn: 'btn-outline',
+  },
 ];
 
 function JoinSection() {
+  const [selectedCategory, setSelectedCategory] = useState<JoinCategory | null>(null);
+
   return (
     <section className="join section-padding" id="join">
       <div className="container">
@@ -224,15 +255,36 @@ function JoinSection() {
           {JOIN_CARDS.map((card) => (
             <div key={card.title} className={`join-card ${card.cls}`}>
               <div className={`join-icon-box ${card.iconCls}`}>
-                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+                {card.id === 'empresas' && (
+                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+                )}
+                {card.id === 'municipios' && (
+                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="21" x2="21" y2="21"/><line x1="4" y1="10" x2="20" y2="10"/><polyline points="12 3 2 10 22 10 12 3"/><line x1="6" y1="10" x2="6" y2="21"/><line x1="10" y1="10" x2="10" y2="21"/><line x1="14" y1="10" x2="14" y2="21"/><line x1="18" y1="10" x2="18" y2="21"/></svg>
+                )}
+                {card.id === 'instituicoes' && (
+                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c0 2 2 3 6 3s6-1 6-3v-5"/></svg>
+                )}
               </div>
               <h3 className="join-card-title">{card.title}</h3>
               <p className="join-card-desc">{card.desc}</p>
-              <a href="mailto:contato@programadescubra.mg.gov.br" className={`btn ${card.btn} join-action`}>Saiba como</a>
+              <button
+                type="button"
+                onClick={() => setSelectedCategory(card.id)}
+                className={`btn ${card.btn} join-action`}
+                aria-haspopup="dialog"
+              >
+                Saiba como
+              </button>
             </div>
           ))}
         </div>
       </div>
+
+      <JoinModal
+        isOpen={selectedCategory !== null}
+        category={selectedCategory}
+        onClose={() => setSelectedCategory(null)}
+      />
     </section>
   );
 }

@@ -41,7 +41,7 @@ export async function POST(request: Request) {
     }
 
     if (senha.length < 6) {
-      return NextResponse.json({ error: 'A senha deve ter pelo menos 6 caracteres.' }, { status: 400 });
+      return NextResponse.json({ error: 'A senha deve ter pelo menos 8 caracteres.' }, { status: 400 });
     }
 
     const admin = getAdminClient();
