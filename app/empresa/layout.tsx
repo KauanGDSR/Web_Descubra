@@ -1,4 +1,4 @@
-import EmpresaSidebar from '@/components/empresa/EmpresaSidebar';
+import EmpresaSidebar from '@/frontend/components/empresa/EmpresaSidebar';
 
 export default function EmpresaLayout({ children }: { children: React.ReactNode }) {
   return (

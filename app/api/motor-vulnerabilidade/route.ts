@@ -1,7 +1,7 @@
 import { NextResponse, NextRequest } from 'next/server';
-import { getAdminClient } from '@/lib/supabase-admin';
+import { getAdminClient } from '@/backend/lib/supabase-admin';
 import { createClient } from '@/utils/supabase/server';
-import { calcularScoreVulnerabilidade } from '@/lib/vulnerabilidade';
+import { calcularScoreVulnerabilidade } from '@/backend/lib/vulnerabilidade';
 
 // ── GET: RETORNA A FILA INTELIGENTE DE VULNERABILIDADE ────────────────────────
 export async function GET(request: NextRequest) {

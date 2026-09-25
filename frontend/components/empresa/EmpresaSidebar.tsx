@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { createClient } from '@/utils/supabase/client';
-import LogoutButton from '@/components/ui/LogoutButton';
+import LogoutButton from '@/frontend/components/ui/LogoutButton';
 
 const TABS = [
   {

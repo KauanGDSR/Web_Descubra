@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { createClient } from '@/utils/supabase/client';
-import { useDialog } from '@/components/ui/CustomDialog';
+import { useDialog } from '@/frontend/components/ui/CustomDialog';
 import { Clock, MessageSquare, ThumbsUp, ThumbsDown, CheckCircle } from 'lucide-react';
 
 interface Depoimento {

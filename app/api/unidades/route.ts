@@ -1,6 +1,6 @@
 import { createClient } from '@/utils/supabase/server';
 import { NextResponse } from 'next/server';
-import { getAdminClient } from '@/lib/supabase-admin';
+import { getAdminClient } from '@/backend/lib/supabase-admin';
 
 // [SEC-02] Verificação de autorização direta — sem lógica de "self-healing" com
 // e-mails hardcoded. O perfil DEVE existir na tabela `tecnicos` com cargo='admin'.

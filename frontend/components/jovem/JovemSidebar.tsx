@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 import { LayoutDashboard, UserCircle, Briefcase, GraduationCap, BarChart, Calendar, FileText, HelpCircle, LogOut } from 'lucide-react';
-import LogoutButton from '@/components/ui/LogoutButton';
+import LogoutButton from '@/frontend/components/ui/LogoutButton';
 
 const TABS = [
   { href: '/jovem', label: 'Visão Geral', icon: <LayoutDashboard size={20} /> },

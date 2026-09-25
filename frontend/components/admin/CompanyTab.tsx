@@ -1,34 +1,14 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import Modal from '@/components/ui/Modal';
-import CardEditBtn from '@/components/ui/CardEditBtn';
-import { useDialog } from '@/components/ui/CustomDialog';
+import Modal from '@/frontend/components/ui/Modal';
+import CardEditBtn from '@/frontend/components/ui/CardEditBtn';
+import { useDialog } from '@/frontend/components/ui/CustomDialog';
 import { createClient } from '@/utils/supabase/client';
-import { isFormDirty } from '@/lib/data';
+import { isFormDirty } from '@/shared/data';
+import { CompanyCard } from './CompanyCard';
 
-interface DbCompany {
-  id: string;
-  razao_social: string;
-  cnpj: string;
-  cidade_id: string | null;
-  nome_fantasia: string | null;
-  endereco: string | null;
-  cep: string | null;
-  responsavel_nome: string | null;
-  telefone: string | null;
-  email: string | null;
-  cidades?: {
-    nome: string;
-  } | null;
-  selo?: 'Ouro' | 'Prata' | 'Bronze' | 'Nenhum';
-  pontos_engajamento?: number;
-}
-
-interface City {
-  id: string;
-  nome: string;
-}
+import type { DbCompany, City } from '@/backend/types';
 
 const formatCnpj = (value: string) => {
   const clean = value.replace(/\D/g, '').slice(0, 14);
@@ -198,6 +178,12 @@ export default function CompanyTab() {
         if (error) throw error;
         await dialog.alert('Dados Atualizados', `Empresa <b>${form.razao}</b> atualizada com sucesso.`, 'success');
       } else {
+        if (!form.password || form.password.length < 8) {
+          dialog.alert('Senha Fraca', 'A senha deve ter pelo menos 8 caracteres (padrão de segurança).', 'warning');
+          setSubmitting(false);
+          return;
+        }
+
         const response = await fetch('/api/criar-empresa', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -278,61 +264,21 @@ export default function CompanyTab() {
         /* Grid de cards */
         <div className="company-cards-grid">
           {companies.map((c, idx) => (
-            <div key={c.id} className="company-card">
-              <CardEditBtn onClick={() => openEdit(idx)} title="Editar empresa" />
-              <div className="company-card-header">
-                <div className="company-card-avatar">{c.razao_social.charAt(0)}</div>
-                <div className="company-card-title-group">
-                  <span className="company-card-name">{c.razao_social}</span>
-                  <span className="company-card-cnpj-city">CNPJ: {c.cnpj || '—'} • {c.cidades?.nome || 'Pólo Não Associado'}</span>
-                </div>
-              </div>
-              <div className="company-card-badges">
-                <span className="company-card-badge status-active">Ativa</span>
-                {c.selo && c.selo !== 'Nenhum' && (
-                  <span className="company-card-badge" style={{
-                    backgroundColor: c.selo === 'Ouro' ? 'rgba(245,158,11,0.15)' : c.selo === 'Prata' ? 'rgba(148,163,184,0.15)' : 'rgba(217,119,6,0.15)',
-                    color: c.selo === 'Ouro' ? '#b45309' : c.selo === 'Prata' ? '#475569' : '#78350f',
-                    fontWeight: 700
-                  }}>
-                    {c.selo === 'Ouro' ? '🥇 Ouro' : c.selo === 'Prata' ? '🥈 Prata' : '🥉 Bronze'}
-                  </span>
-                )}
-                <span className="company-card-tag">{c.nome_fantasia || c.razao_social}</span>
-              </div>
-              <div className="company-card-details">
-                <div className="company-card-detail-item"><span className="company-card-detail-label">CEP</span><span className="company-card-detail-value">{c.cep || '—'}</span></div>
-                <div className="company-card-detail-item"><span className="company-card-detail-label">Endereço</span><span className="company-card-detail-value" style={{ fontSize: '0.78rem' }}>{c.endereco || '—'}</span></div>
-                <div className="company-card-detail-item"><span className="company-card-detail-label">Responsável</span><span className="company-card-detail-value">{c.responsavel_nome || '—'}</span></div>
-                <div className="company-card-detail-item"><span className="company-card-detail-label">E-mail</span><span className="company-card-detail-value">{c.email || '—'}</span></div>
-                <div className="company-card-detail-item"><span className="company-card-detail-label">Telefone</span><span className="company-card-detail-value">{c.telefone || '—'}</span></div>
-                <div className="company-card-detail-item">
-                  <span className="company-card-detail-label">Selo</span>
-                  <select
-                    value={c.selo || 'Nenhum'}
-                    onChange={async (e) => {
-                      const newSelo = e.target.value as any;
-                      const { error } = await supabase
-                        .from('empresas_parceiras')
-                        .update({ selo: newSelo })
-                        .eq('id', c.id);
-                      if (error) {
-                        dialog.alert('Erro ao atualizar selo', error.message, 'danger');
-                      } else {
-                        loadData();
-                      }
-                    }}
-                    className="form-control"
-                    style={{ padding: '0.2rem 0.5rem', fontSize: '0.8rem', height: 'auto', marginTop: '0.1rem', cursor: 'pointer' }}
-                  >
-                    <option value="Nenhum">Nenhum</option>
-                    <option value="Bronze">🥉 Bronze</option>
-                    <option value="Prata">🥈 Prata</option>
-                    <option value="Ouro">🥇 Ouro</option>
-                  </select>
-                </div>
-              </div>
-            </div>
+            <CompanyCard
+              key={c.id}
+              company={c}
+              onEdit={() => openEdit(idx)}
+              onUpdateSelo={async (newSelo) => {
+                const { error } = await (supabase.from('empresas_parceiras') as any)
+                  .update({ selo: newSelo })
+                  .eq('id', c.id);
+                if (error) {
+                  dialog.alert('Erro ao atualizar selo', error.message, 'danger');
+                } else {
+                  loadData();
+                }
+              }}
+            />
           ))}
         </div>
       )}
@@ -416,7 +362,7 @@ export default function CompanyTab() {
                 {editIdx === -1 && (
                   <div className="form-group">
                     <label className="form-label">Senha de Acesso</label>
-                    <input className="form-control" type="password" value={form.password || ''} onChange={set('password')} placeholder="Mínimo de 6 caracteres" required />
+                    <input className="form-control" type="password" value={form.password || ''} onChange={set('password')} placeholder="Mínimo de 8 caracteres" required />
                   </div>
                 )}
                 <div className="form-group">

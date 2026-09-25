@@ -1,38 +1,13 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import Modal from '@/components/ui/Modal';
-import CardEditBtn from '@/components/ui/CardEditBtn';
-import { useDialog } from '@/components/ui/CustomDialog';
+import Modal from '@/frontend/components/ui/Modal';
+import CardEditBtn from '@/frontend/components/ui/CardEditBtn';
+import { useDialog } from '@/frontend/components/ui/CustomDialog';
 import { createClient } from '@/utils/supabase/client';
-import { ROLES, isFormDirty } from '@/lib/data';
+import { ROLES, isFormDirty } from '@/shared/data';
 
-interface DbTechnician {
-  id: string;
-  nome: string;
-  telefone_whatsapp: string;
-  cargo: string;
-  equipamento_id: string | null;
-  telegram_id: string | null;
-  equipamentos?: {
-    nome: string;
-    cidade_id: string | null;
-    cidades?: {
-      nome: string;
-    };
-  } | null;
-}
-
-interface Equipment {
-  id: string;
-  nome: string;
-  cidade_id: string | null;
-}
-
-interface City {
-  id: string;
-  nome: string;
-}
+import type { DbTechnician, Equipment, City } from '@/backend/types';
 
 const EMPTY = { name: '', email: '', password: '', phone: '', role: '', cityId: '', unitId: '', telegramId: '' };
 

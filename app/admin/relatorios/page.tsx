@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import ReportTab from '@/components/admin/ReportTab';
+import ReportTab from '@/frontend/components/admin/ReportTab';
 
 export const metadata: Metadata = {
   title: 'Relatórios de Acompanhamento e IA',

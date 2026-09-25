@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import TechnicianTab from '@/components/admin/TechnicianTab';
+import TechnicianTab from '@/frontend/components/admin/TechnicianTab';
 
 export const metadata: Metadata = {
   title: 'Cadastro de Técnicos',

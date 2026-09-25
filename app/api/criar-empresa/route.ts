@@ -1,6 +1,7 @@
 import { createClient } from '@/utils/supabase/server';
 import { NextResponse } from 'next/server';
-import { getAdminClient } from '@/lib/supabase-admin';
+import { getAdminClient } from '@/backend/lib/supabase-admin';
+import { criarEmpresaSchema } from '@/backend/lib/schemas';
 
 export async function POST(request: Request) {
   try {
@@ -12,7 +13,6 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Não autorizado. Faça login primeiro.' }, { status: 401 });
     }
 
-    // [SEC-02] Verificação de autorização direta — sem lógica de "self-healing".
     const { data: reqAdmin } = await supabase
       .from('tecnicos')
       .select('cargo')
@@ -20,7 +20,19 @@ export async function POST(request: Request) {
       .single();
 
     if (!reqAdmin || reqAdmin.cargo !== 'admin') {
-      return NextResponse.json({ error: 'Acesso negado. Apenas administradores podem cadastrar empresas com senhas.' }, { status: 403 });
+      return NextResponse.json(
+        { error: 'Acesso negado. Apenas administradores podem cadastrar empresas com senhas.' },
+        { status: 403 }
+      );
+    }
+
+    // Validação estrita via Zod Schema (ASVS 1.1 + 4.2)
+    const body = await request.json();
+    const parsed = criarEmpresaSchema.safeParse(body);
+
+    if (!parsed.success) {
+      const errorMsg = parsed.error.issues.map((i) => i.message).join(' | ');
+      return NextResponse.json({ error: errorMsg }, { status: 400 });
     }
 
     const {
@@ -34,25 +46,8 @@ export async function POST(request: Request) {
       responsavel_nome,
       cidade_id,
       senha,
-      selo
-    } = await request.json();
-
-    // Validações básicas
-    if (!razao_social || !email || !senha || !cnpj || !responsavel_nome) {
-      return NextResponse.json(
-        { error: 'Preencha todos os campos obrigatórios (Razão Social, E-mail, Senha, CNPJ e Responsável).' },
-        { status: 400 }
-      );
-    }
-
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      return NextResponse.json({ error: 'Formato de e-mail inválido.' }, { status: 400 });
-    }
-
-    if (senha.length < 6) {
-      return NextResponse.json({ error: 'A senha deve ter pelo menos 6 caracteres.' }, { status: 400 });
-    }
+      selo,
+    } = parsed.data;
 
     const admin = getAdminClient();
 
@@ -71,7 +66,6 @@ export async function POST(request: Request) {
     }
 
     // 2. Insere na tabela empresas_parceiras
-    // [BUG-02] Rollback com log de falha para auditoria manual caso o delete também falhe
     const { error: companyError } = await (admin.from('empresas_parceiras') as any).insert({
       id: authData.user.id,
       razao_social,
@@ -83,7 +77,7 @@ export async function POST(request: Request) {
       telefone: telefone || null,
       responsavel_nome,
       cidade_id: cidade_id || null,
-      selo: selo || 'Nenhum'
+      selo: selo || 'Nenhum',
     });
 
     if (companyError) {
@@ -91,7 +85,7 @@ export async function POST(request: Request) {
       const { error: deleteError } = await admin.auth.admin.deleteUser(authData.user.id);
       if (deleteError) {
         console.error(
-          `[ROLLBACK FAILURE] Usuário Auth criado (id: ${authData.user.id}, email: ${email}) mas não foi possível deletá-lo após falha no insert da tabela empresas_parceiras. Limpeza manual necessária.`,
+          `[ROLLBACK FAILURE] Usuário Auth criado (id: ${authData.user.id}, email: ${email}) mas não foi possível deletá-lo após falha no insert.`,
           deleteError
         );
       }

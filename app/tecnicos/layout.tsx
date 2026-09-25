@@ -1,4 +1,4 @@
-import TecnicoSidebar from '@/components/tecnico/TecnicoSidebar';
+import TecnicoSidebar from '@/frontend/components/tecnico/TecnicoSidebar';
 
 export default function TecnicoLayout({ children }: { children: React.ReactNode }) {
   return (

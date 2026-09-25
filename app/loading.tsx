@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import LoadingScreen from '@/components/ui/LoadingScreen';
+import LoadingScreen from '@/frontend/components/ui/LoadingScreen';
 
 export default function GlobalLoading() {
   const [showLoading, setShowLoading] = useState(false);

@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import CompanyTab from '@/components/admin/CompanyTab';
+import CompanyTab from '@/frontend/components/admin/CompanyTab';
 
 export const metadata: Metadata = {
   title: 'Cadastro de Empresas',

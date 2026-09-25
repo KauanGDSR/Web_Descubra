@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, Fragment } from 'react';
 import { createClient } from '@/utils/supabase/client';
-import { useDialog } from '@/components/ui/CustomDialog';
+import { useDialog } from '@/frontend/components/ui/CustomDialog';
 
 interface Acompanhamento {
   id: string;

@@ -1,4 +1,4 @@
-import JovemSidebar from '@/components/jovem/JovemSidebar';
+import JovemSidebar from '@/frontend/components/jovem/JovemSidebar';
 
 export default function JovemLayout({ children }: { children: React.ReactNode }) {
   return (

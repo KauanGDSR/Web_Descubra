@@ -1,39 +1,13 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import Modal from '@/components/ui/Modal';
-import CardEditBtn from '@/components/ui/CardEditBtn';
-import { useDialog } from '@/components/ui/CustomDialog';
+import Modal from '@/frontend/components/ui/Modal';
+import CardEditBtn from '@/frontend/components/ui/CardEditBtn';
+import { useDialog } from '@/frontend/components/ui/CustomDialog';
 import { createClient } from '@/utils/supabase/client';
-import { isFormDirty } from '@/lib/data';
+import { isFormDirty } from '@/shared/data';
 
-interface City {
-  id: string;
-  nome: string;
-}
-
-interface ExtendedUnit {
-  id: string;
-  nome: string;
-  tipo?: string;
-  cidade_id: string | null;
-  cidades?: {
-    id: string;
-    nome: string;
-  } | null;
-
-  // Extended fields stored in localStorage
-  endereco?: string;
-  numero?: string;
-  bairro?: string;
-  cep?: string;
-  telefone?: string;
-  email?: string;
-  responsavel_nome?: string;
-  responsavel_cargo?: string;
-  bairros_atendidos?: string[];
-  publico_atendido?: string[];
-}
+import type { City, ExtendedUnit } from '@/backend/types';
 
 const EMPTY_FORM = {
   nome: '',

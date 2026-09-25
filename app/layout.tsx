@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import './globals.css';
-import { DialogProvider } from '@/components/ui/CustomDialog';
-import PwaRegister from '@/components/PwaRegister';
+import { DialogProvider } from '@/frontend/components/ui/CustomDialog';
+import PwaRegister from '@/frontend/components/PwaRegister';
 
 export const metadata: Metadata = {
   title: { default: 'DescubraHub - Governo de Minas Gerais', template: '%s | DescubraHub' },

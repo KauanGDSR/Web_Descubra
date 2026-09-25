@@ -1,11 +1,11 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import Modal from '@/components/ui/Modal';
-import CardEditBtn from '@/components/ui/CardEditBtn';
-import { useDialog } from '@/components/ui/CustomDialog';
+import Modal from '@/frontend/components/ui/Modal';
+import CardEditBtn from '@/frontend/components/ui/CardEditBtn';
+import { useDialog } from '@/frontend/components/ui/CustomDialog';
 import { createClient } from '@/utils/supabase/client';
-import { INTERESTS, INTEREST_EMOJIS, isFormDirty, vulnerClass } from '@/lib/data';
+import { INTERESTS, INTEREST_EMOJIS, isFormDirty, vulnerClass } from '@/shared/data';
 
 const TOTAL_STEPS = 5;
 const STEP_LABELS = ['Dados Pessoais', 'Dados Familiares', 'Vulnerabilidade', 'Interesses', 'Revisão'];
@@ -112,59 +112,7 @@ const VULNERABILITY_QUESTIONS: [keyof FormState, string][] = [
   ['transportDiff', 'Dificuldades de transporte?'],
   ['psychHelp', 'Em acompanhamento psicológico?'],
 ];
-
-interface DbYouth {
-  id: string;
-  nome_completo: string;
-  possui_nome_social?: boolean;
-  nome_social?: string | null;
-  idade: number;
-  bairro: string;
-  cpf: string | null;
-  codigo_acesso: string | null;
-  pontuacao_atual: number | null;
-  areas_interesse: string[] | null;
-  equipamento_id: string | null;
-  equipamentos?: {
-    nome: string;
-    cidades?: {
-      nome: string;
-    } | null;
-  } | null;
-  sexo: string | null;
-  cor_pele: string | null;
-  escolaridade: string;
-  turno_escolar?: string | null;
-  data_nascimento: string;
-  endereco: string | null;
-  telefone: string | null;
-  whatsapp: string | null;
-  nome_responsavel: string | null;
-  grau_parentesco: string | null;
-  telefone_responsavel: string | null;
-  pessoas_residencia: number | null;
-  pessoas_trabalham: number | null;
-  recebe_bolsa_familia: boolean | null;
-  possui_cadunico: boolean | null;
-  esteve_medida_socioeducativa: boolean | null;
-  possui_deficiencia: boolean | null;
-  deficiencia_qual: string | null;
-  possui_acesso_internet: boolean | null;
-  possui_computador: boolean | null;
-  trabalhou_anteriormente: boolean | null;
-  abandonou_escola: boolean | null;
-  dificuldades_transporte: boolean | null;
-  acompanhamento_psicologico: boolean | null;
-}
-
-interface Equipment {
-  id: string;
-  nome: string;
-  cidade_id: string | null;
-  cidades?: {
-    nome: string;
-  } | null;
-}
+import type { DbYouth, Equipment } from '@/backend/types';
 
 interface City {
   id: string;

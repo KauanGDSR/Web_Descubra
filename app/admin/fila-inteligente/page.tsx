@@ -17,8 +17,8 @@ import {
   Briefcase
 } from 'lucide-react';
 import { createClient } from '@/utils/supabase/client';
-import { useDialog } from '@/components/ui/CustomDialog';
-import Modal from '@/components/ui/Modal';
+import { useDialog } from '@/frontend/components/ui/CustomDialog';
+import Modal from '@/frontend/components/ui/Modal';
 
 interface JovemFila {
   id: string;

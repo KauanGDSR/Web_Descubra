@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback, ReactNode } from 'react';
-import { DialogType } from '@/lib/types';
+import { DialogType } from '@/backend/types';
 
 interface DialogOptions {
   title: string;

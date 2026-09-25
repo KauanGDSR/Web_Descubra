@@ -4,11 +4,11 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { createClient } from '@/utils/supabase/client';
-import LogoutButton from '@/components/ui/LogoutButton';
+import LogoutButton from '@/frontend/components/ui/LogoutButton';
 
 const TABS = [
   {
-    href: '/tecnicos',
+    href: '/admin',
     label: 'Visão geral',
     icon: (
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -18,7 +18,16 @@ const TABS = [
     ),
   },
   {
-    href: '/tecnicos/jovens',
+    href: '/admin/tecnicos',
+    label: 'Cadastro de Técnico',
+    icon: (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+      </svg>
+    ),
+  },
+  {
+    href: '/admin/jovens',
     label: 'Cadastro de Jovem',
     icon: (
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -28,7 +37,30 @@ const TABS = [
     ),
   },
   {
-    href: '/tecnicos/mapa-inteligente',
+    href: '/admin/empresas',
+    label: 'Cadastro de Empresa',
+    icon: (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="2" y="7" width="20" height="14" rx="2" ry="2"/>
+        <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
+      </svg>
+    ),
+  },
+  {
+    href: '/admin/unidades',
+    label: 'Unidades de Referência',
+    icon: (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M3 21h18" />
+        <path d="M5 21V10a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v11" />
+        <path d="M9 21v-4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v4" />
+        <line x1="9" y1="12" x2="9" y2="12.01" />
+        <line x1="15" y1="12" x2="15" y2="12.01" />
+      </svg>
+    ),
+  },
+  {
+    href: '/admin/mapa-inteligente',
     label: 'Mapa Inteligente',
     icon: (
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -39,7 +71,7 @@ const TABS = [
     ),
   },
   {
-    href: '/tecnicos/fila-inteligente',
+    href: '/admin/fila-inteligente',
     label: 'Fila Inteligente',
     icon: (
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -51,7 +83,7 @@ const TABS = [
     ),
   },
   {
-    href: '/tecnicos/relatorios',
+    href: '/admin/relatorios',
     label: 'Relatórios',
     icon: (
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -64,7 +96,7 @@ const TABS = [
     ),
   },
   {
-    href: '/tecnicos/resgates',
+    href: '/admin/resgates',
     label: 'Resgates de Prêmios',
     icon: (
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -74,7 +106,7 @@ const TABS = [
     ),
   },
   {
-    href: '/tecnicos/depoimentos',
+    href: '/admin/depoimentos',
     label: 'Depoimentos de Alunos',
     icon: (
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -84,7 +116,7 @@ const TABS = [
   },
 ];
 
-export default function TecnicoSidebar() {
+export default function AdminSidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const [supabase] = useState(() => createClient());
@@ -113,16 +145,28 @@ export default function TecnicoSidebar() {
     fetchUserRole();
   }, []);
 
-  // Redirecionamento se for administrador acessando caminhos do técnico
+  // Redirecionamento se for técnico acessando caminhos administrativos
   useEffect(() => {
-    if (role === 'admin' && pathname.startsWith('/tecnicos')) {
-      const subpath = pathname.replace(/^\/tecnicos/, '/admin');
-      router.push(subpath);
+    if (role === 'tecnico' && pathname.startsWith('/admin')) {
+      const subpath = pathname.replace(/^\/admin/, '/tecnicos');
+      if (subpath.startsWith('/tecnicos/tecnicos') || subpath.startsWith('/tecnicos/unidades')) {
+        router.push('/tecnicos');
+      } else {
+        router.push(subpath);
+      }
     }
   }, [role, pathname, router]);
 
   const isActive = (href: string) =>
-    href === '/tecnicos' ? pathname === '/tecnicos' : pathname.startsWith(href);
+    href === '/admin' ? pathname === '/admin' : pathname.startsWith(href);
+
+  // Filtra as abas: Oculta 'Cadastro de Técnico' e 'Unidades de Referência' a menos que o cargo esteja explicitamente confirmado como 'admin'
+  const visibleTabs = TABS.filter((tab) => {
+    if (tab.href === '/admin/tecnicos' || tab.href === '/admin/unidades') {
+      return role === 'admin';
+    }
+    return true;
+  });
 
   const isExpanded = isHovered || isMobileOpen;
 
@@ -173,17 +217,17 @@ export default function TecnicoSidebar() {
           
           <div className="sidebar-brand">
             <Link href="/" className="sidebar-logo-text" title="Ir para a Página Inicial">
-              DescubraHub
+              Descubra<span>!</span>
             </Link>
             <span className="sidebar-role-badge">
-              Painel Técnico
+              {role === 'tecnico' ? 'Painel Técnico' : 'Painel Admin'}
             </span>
           </div>
         </div>
 
         {/* Lista de abas de navegação */}
         <nav className="sidebar-nav-container" aria-label="Navegação do painel">
-          {TABS.map((tab) => {
+          {visibleTabs.map((tab) => {
             const active = isActive(tab.href);
             return (
               <Link

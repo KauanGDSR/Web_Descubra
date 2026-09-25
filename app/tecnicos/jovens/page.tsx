@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import YouthTab from '@/components/admin/YouthTab';
+import YouthTab from '@/frontend/components/admin/YouthTab';
 
 export const metadata: Metadata = {
   title: 'Cadastro de Jovens',

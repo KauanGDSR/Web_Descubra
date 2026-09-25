@@ -1,7 +1,5 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { createClient } from '@/utils/supabase/client';
 import Link from 'next/link';
 import {
   Briefcase,
@@ -14,106 +12,10 @@ import {
   ChevronRight,
   ClipboardList
 } from 'lucide-react';
-
-interface CompanyData {
-  id: string;
-  razao_social: string;
-  nome_fantasia: string | null;
-  cnpj: string;
-  cep: string | null;
-  endereco: string | null;
-  telefone: string | null;
-  email: string | null;
-  responsavel_nome: string | null;
-  cidades?: {
-    nome: string;
-  } | null;
-  selo?: 'Ouro' | 'Prata' | 'Bronze' | 'Nenhum';
-  pontos_engajamento?: number;
-}
-
-interface Stats {
-  totalVagas: number;
-  vagasAbertas: number;
-  vagasPreenchidas: number;
-  totalEncaminhamentos: number;
-  encaminhamentosPendentes: number;
-  encaminhamentosAprovados: number;
-}
+import { useEmpresaDashboard } from '@/frontend/hooks/useEmpresaDashboard';
 
 export default function EmpresaDashboard() {
-  const [supabase] = useState(() => createClient());
-  const [company, setCompany] = useState<CompanyData | null>(null);
-  const [stats, setStats] = useState<Stats | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  const loadDashboardData = async () => {
-    setLoading(true);
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('Não autenticado');
-
-      // 1. Busca dados da empresa
-      const { data: companyData, error: companyErr } = await supabase
-        .from('empresas_parceiras')
-        .select('*, cidades(nome)')
-        .eq('id', user.id)
-        .single();
-
-      if (companyErr) throw companyErr;
-      setCompany(companyData);
-
-      // 2. Busca vagas da empresa
-      const { data: vacancies, error: vacErr } = await supabase
-        .from('vagas_disponiveis')
-        .select('id, status, quantidade_vagas')
-        .eq('empresa_id', user.id);
-
-      if (vacErr) throw vacErr;
-
-      const vList = vacancies || [];
-      const vacancyIds = vList.map(v => v.id);
-
-      // 3. Busca encaminhamentos para as vagas dessa empresa
-      let referrals: any[] = [];
-      if (vacancyIds.length > 0) {
-        const { data: refsData, error: refsErr } = await supabase
-          .from('encaminhamentos_vagas')
-          .select('status')
-          .in('vaga_id', vacancyIds);
-
-        if (refsErr) throw refsErr;
-        referrals = refsData || [];
-      }
-
-      // Calcula estatísticas
-      const totalVagas = vList.reduce((acc, v) => acc + (v.quantidade_vagas || 1), 0);
-      const vagasAbertas = vList.filter(v => v.status === 'Aberta').reduce((acc, v) => acc + (v.quantidade_vagas || 1), 0);
-      const vagasPreenchidas = vList.filter(v => v.status === 'Preenchida').reduce((acc, v) => acc + (v.quantidade_vagas || 1), 0);
-
-      const totalEncaminhamentos = referrals.length;
-      const encaminhamentosPendentes = referrals.filter(r => r.status === 'Pendente' || r.status === 'Entrevista Agendada').length;
-      const encaminhamentosAprovados = referrals.filter(r => r.status === 'Aprovado').length;
-
-      setStats({
-        totalVagas,
-        vagasAbertas,
-        vagasPreenchidas,
-        totalEncaminhamentos,
-        encaminhamentosPendentes,
-        encaminhamentosAprovados
-      });
-
-    } catch (err) {
-      console.error('Erro ao carregar dados da empresa:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    loadDashboardData();
-  }, []);
+  const { company, stats, loading, refresh } = useEmpresaDashboard();
 
   if (loading || !company || !stats) {
     return (
@@ -210,7 +112,7 @@ export default function EmpresaDashboard() {
           </p>
         </div>
         <button
-          onClick={loadDashboardData}
+          onClick={refresh}
           className="btn btn-outline"
           style={{ padding: '0.5rem 1rem', borderRadius: 'var(--border-radius-sm)', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.35rem', border: '1px solid rgba(10,37,64,0.2)' }}
         >

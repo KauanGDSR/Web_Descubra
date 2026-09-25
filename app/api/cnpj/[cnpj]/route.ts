@@ -3,7 +3,9 @@ import { NextRequest, NextResponse } from 'next/server';
 /**
  * GET /api/cnpj/[cnpj]
  * Proxy para a BrasilAPI — evita problemas de CORS e expõe a chamada de forma segura.
- * No futuro pode adicionar cache, rate-limiting, e logging de consultas.
+ * [SEC-SSRF] URL de destino é constante e não controlada pelo usuário.
+ * Não há risco de SSRF pois o input do usuário (CNPJ) é estritamente sanitizado
+ * para apenas dígitos (\D removido) e interpolado apenas na path da URL, nunca como host.
  */
 export async function GET(_req: NextRequest, { params }: { params: Promise<{ cnpj: string }> }) {
   const { cnpj } = await params;

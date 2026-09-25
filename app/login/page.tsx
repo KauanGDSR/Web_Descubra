@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import LoadingScreen from '@/components/ui/LoadingScreen';
+import LoadingScreen from '@/frontend/components/ui/LoadingScreen';
 import { createClient } from '@/utils/supabase/client';
 
 export default function LoginPage() {
@@ -16,7 +16,7 @@ export default function LoginPage() {
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [authErrorMsg, setAuthErrorMsg] = useState<string | null>(null);
   // Acesso Rápido disponível para testes e demonstração do sistema
-  const isDev = true;
+  const isDev = process.env.NODE_ENV === 'development';
 
   const loginWithCredentials = async (targetEmail: string, targetPassword: string) => {
     setIsLoggingIn(true);
@@ -99,7 +99,7 @@ export default function LoginPage() {
     e.preventDefault();
     const newErrors: typeof errors = {};
     if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) newErrors.email = true;
-    if (!password || password.length < 4) newErrors.password = true;
+    if (!password || password.length < 8) newErrors.password = true;
     if (Object.keys(newErrors).length) { setErrors(newErrors); return; }
     
     await loginWithCredentials(email, password);

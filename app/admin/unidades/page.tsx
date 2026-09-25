@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import ReferenceUnitTab from '@/components/admin/ReferenceUnitTab';
+import ReferenceUnitTab from '@/frontend/components/admin/ReferenceUnitTab';
 
 export const metadata: Metadata = {
   title: 'Cadastro de Unidades de Referência | Programa Descubra',

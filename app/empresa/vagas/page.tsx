@@ -1,28 +1,12 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { createClient } from '@/utils/supabase/client';
-import Modal from '@/components/ui/Modal';
-import CardEditBtn from '@/components/ui/CardEditBtn';
-import { useDialog } from '@/components/ui/CustomDialog';
+import { useState } from 'react';
+import Modal from '@/frontend/components/ui/Modal';
+import CardEditBtn from '@/frontend/components/ui/CardEditBtn';
+import { useDialog } from '@/frontend/components/ui/CustomDialog';
 import { Briefcase, Award, Clock, DollarSign, Calendar, FileText, CheckCircle, XCircle } from 'lucide-react';
-
-interface Vacancy {
-  id: string;
-  empresa_id: string;
-  titulo: string;
-  descricao: string;
-  tipo: string;
-  status: string;
-  quantidade_vagas: number;
-  cargo: string | null;
-  horario: string | null;
-  bolsa_auxilio: number;
-  idade_minima: number;
-  escolaridade_exigida: string | null;
-  competencias_desejadas: string[] | string | null;
-  created_at: string;
-}
+import { useVagas } from '@/frontend/hooks/useVagas';
+import type { Vacancy } from '@/backend/types';
 
 const EMPTY_VACANCY = {
   titulo: '',
@@ -40,10 +24,7 @@ const EMPTY_VACANCY = {
 
 export default function VagasPage() {
   const dialog = useDialog();
-  const [supabase] = useState(() => createClient());
-  const [vacancies, setVacancies] = useState<Vacancy[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [companyId, setCompanyId] = useState<string | null>(null);
+  const { vacancies, loading, saveVacancy } = useVagas();
 
   // Modal State
   const [modalOpen, setModalOpen] = useState(false);
@@ -53,33 +34,6 @@ export default function VagasPage() {
 
   // Filter State
   const [filterStatus, setFilterStatus] = useState<string>('Todos');
-
-  const loadVacancies = async () => {
-    setLoading(true);
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('Não autenticado');
-      setCompanyId(user.id);
-
-      const { data, error } = await supabase
-        .from('vagas_disponiveis')
-        .select('*')
-        .eq('empresa_id', user.id)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      setVacancies(data || []);
-    } catch (err: any) {
-      console.error(err);
-      dialog.alert('Erro de Conexão', 'Não foi possível buscar as vagas do Supabase.', 'danger');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    loadVacancies();
-  }, []);
 
   const openNew = () => {
     setForm(EMPTY_VACANCY);
@@ -120,7 +74,6 @@ export default function VagasPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!companyId) return;
     setSubmitting(true);
 
     try {
@@ -128,8 +81,8 @@ export default function VagasPage() {
         ? `${form.horario_inicio} às ${form.horario_fim}`
         : null;
 
-      const dbEntry = {
-        empresa_id: companyId,
+      const payload = {
+        id: editVacancyId || undefined,
         titulo: form.titulo.trim(),
         descricao: form.descricao.trim(),
         tipo: form.tipo,
@@ -142,29 +95,20 @@ export default function VagasPage() {
         competencias_desejadas: form.competencias_desejadas.trim()
           ? form.competencias_desejadas.split(',').map(s => s.trim()).filter(Boolean)
           : null,
-        status: editVacancyId ? undefined : 'Aberta' // Status inicial é Aberta ao cadastrar
       };
 
-      if (editVacancyId) {
-        const { error } = await supabase
-          .from('vagas_disponiveis')
-          .update(dbEntry)
-          .eq('id', editVacancyId);
-        if (error) throw error;
-        await dialog.alert('Sucesso', 'Vaga atualizada com sucesso.', 'success');
-      } else {
-        const { error } = await supabase
-          .from('vagas_disponiveis')
-          .insert(dbEntry);
-        if (error) throw error;
-        await dialog.alert('Sucesso', 'Nova vaga publicada com sucesso.', 'success');
-      }
+      await saveVacancy(payload);
+
+      await dialog.alert(
+        'Sucesso',
+        editVacancyId ? 'Vaga atualizada com sucesso.' : 'Nova vaga publicada com sucesso.',
+        'success'
+      );
 
       setModalOpen(false);
-      loadVacancies();
     } catch (err: any) {
       console.error(err);
-      dialog.alert('Erro ao Salvar', err.message || 'Erro ao tentar gravar dados no Supabase.', 'danger');
+      dialog.alert('Erro ao Salvar', err.message || 'Erro ao tentar gravar dados da vaga.', 'danger');
     } finally {
       setSubmitting(false);
     }
@@ -181,14 +125,8 @@ export default function VagasPage() {
     if (!ok) return;
 
     try {
-      const { error } = await supabase
-        .from('vagas_disponiveis')
-        .update({ status: newStatus })
-        .eq('id', id);
-
-      if (error) throw error;
+      await saveVacancy({ id, status: newStatus });
       await dialog.alert('Status Atualizado', `Vaga atualizada para "${newStatus}".`, 'success');
-      loadVacancies();
     } catch (err: any) {
       console.error(err);
       dialog.alert('Erro', 'Não foi possível atualizar o status da vaga.', 'danger');

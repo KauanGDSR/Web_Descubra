@@ -2,7 +2,7 @@ import { NextResponse, NextRequest } from 'next/server';
 import { generateObject, type ModelMessage } from 'ai';
 import { google } from '@ai-sdk/google';
 import { z } from 'zod';
-import { getAdminClient, sanitizeNumericId } from '@/lib/supabase-admin';
+import { getAdminClient, sanitizeNumericId } from '@/backend/lib/supabase-admin';
 
 // ── FUNÇÕES AUXILIARES DE NOME (escopo do módulo, não re-criadas a cada request) ──
 

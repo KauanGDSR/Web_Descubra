@@ -1,6 +1,6 @@
 import { createClient } from '@/utils/supabase/server';
 import { NextResponse } from 'next/server';
-import { getAdminClient } from '@/lib/supabase-admin';
+import { getAdminClient } from '@/backend/lib/supabase-admin';
 
 export async function POST(request: Request) {
   try {

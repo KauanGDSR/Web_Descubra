@@ -18,95 +18,10 @@ import {
   UserCheck
 } from 'lucide-react';
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
-import { createClient } from '@/utils/supabase/client';
-
-interface JovemData {
-  id: string;
-  nome_completo: string;
-  nome_social: string | null;
-  bairro: string | null;
-  escolaridade: string | null;
-  turno_escolar: string | null;
-  entidade_formadora: string | null;
-  codigo_acesso: string | null;
-  pontuacao_atual: number;
-  passou_pre_aprendizagem: boolean;
-  fez_pre_aprendizagem: boolean;
-  areas_interesse: string[] | null;
-  equipamentos?: any;
-}
+import { useJovemDashboard } from '@/frontend/hooks/useJovemDashboard';
 
 export default function JovemDashboard() {
-  const [jovem, setJovem] = useState<JovemData | null>(null);
-  const [vagasCount, setVagasCount] = useState(0);
-  const [acompanhamentosCount, setAcompanhamentosCount] = useState(0);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchDashboardData = async () => {
-      const supabase = createClient();
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        
-        let loadedJovem: JovemData | null = null;
-
-        if (session?.user?.id) {
-          const { data } = await supabase
-            .from('jovens')
-            .select('*, equipamentos(nome, tipo)')
-            .eq('id', session.user.id)
-            .maybeSingle();
-          if (data) loadedJovem = data as unknown as JovemData;
-        }
-
-        // Se não encontrou por ID (ex: usuário demo jovem@descubra.com), carrega o jovem cadastrado
-        if (!loadedJovem) {
-          const { data } = await supabase
-            .from('jovens')
-            .select('*, equipamentos(nome, tipo)')
-            .order('created_at', { ascending: false })
-            .limit(1)
-            .maybeSingle();
-          if (data) loadedJovem = data as unknown as JovemData;
-        }
-
-        setJovem(loadedJovem);
-
-        // Fetch Total Vagas Abertas
-        const { count: vCount } = await supabase
-          .from('vagas_disponiveis')
-          .select('*', { count: 'exact', head: true })
-          .eq('status', 'Aberta');
-        setVagasCount(vCount || 0);
-
-        // Fetch Total Acompanhamentos do Jovem (ou geral do banco)
-        if (loadedJovem?.id) {
-          const { count: aCount } = await supabase
-            .from('acompanhamentos')
-            .select('*', { count: 'exact', head: true })
-            .eq('jovem_id', loadedJovem.id);
-          
-          if (aCount !== null && aCount > 0) {
-            setAcompanhamentosCount(aCount);
-          } else {
-            // Se o jovem ainda não tiver registros próprios, conta o total de acompanhamentos no sistema
-            const { count: totalAcomp } = await supabase
-              .from('acompanhamentos')
-              .select('*', { count: 'exact', head: true });
-            setAcompanhamentosCount(totalAcomp || 0);
-          }
-        }
-
-      } catch (error) {
-        console.error('Erro ao carregar dados do dashboard:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchDashboardData();
-  }, []);
+  const { jovem, vagasCount, acompanhamentosCount, loading } = useJovemDashboard();
 
   if (loading) {
     return (
