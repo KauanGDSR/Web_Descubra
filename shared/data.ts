@@ -9,10 +9,40 @@ export const INTEREST_EMOJIS: Record<string, string> = {
   Logística: '🚛', Saúde: '🏥', Outros: '➕',
 };
 
-export function isFormDirty(data: Record<string, unknown>): boolean {
-  return Object.values(data).some((v) => {
+export function isFormDirty(
+  current: Record<string, unknown>,
+  initial?: Record<string, unknown>
+): boolean {
+  if (initial) {
+    const allKeys = new Set([...Object.keys(current), ...Object.keys(initial)]);
+    for (const key of allKeys) {
+      const valCurr = current[key];
+      const valInit = initial[key];
+
+      if (Array.isArray(valCurr) || Array.isArray(valInit)) {
+        const arrCurr = Array.isArray(valCurr) ? valCurr : [];
+        const arrInit = Array.isArray(valInit) ? valInit : [];
+        if (arrCurr.length !== arrInit.length) return true;
+        const sortedCurr = [...arrCurr].map(String).sort();
+        const sortedInit = [...arrInit].map(String).sort();
+        for (let i = 0; i < sortedCurr.length; i++) {
+          if (sortedCurr[i] !== sortedInit[i]) return true;
+        }
+        continue;
+      }
+
+      const normCurr = valCurr === null || valCurr === undefined ? '' : String(valCurr).trim();
+      const normInit = valInit === null || valInit === undefined ? '' : String(valInit).trim();
+      if (normCurr !== normInit) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  return Object.values(current).some((v) => {
     if (Array.isArray(v)) return v.length > 0;
-    return v !== '' && v !== false && v !== 0;
+    return v !== '' && v !== false && v !== 0 && v !== null && v !== undefined;
   });
 }
 

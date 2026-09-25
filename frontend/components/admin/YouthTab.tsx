@@ -198,7 +198,17 @@ export default function YouthTab() {
     if (modalRef.current) modalRef.current.scrollTop = 0;
   }, [step]);
 
-  const openNew = () => { setForm(EMPTY_FORM); setErrors({}); setShowPinResult(null); setStep(1); setEditIdx(-1); setModalOpen(true); };
+  const initialFormRef = useRef<FormState>(EMPTY_FORM);
+
+  const openNew = () => {
+    setForm(EMPTY_FORM);
+    initialFormRef.current = EMPTY_FORM;
+    setErrors({});
+    setShowPinResult(null);
+    setStep(1);
+    setEditIdx(-1);
+    setModalOpen(true);
+  };
   
   const openEdit = (idx: number) => {
     const y = youths[idx];
@@ -222,7 +232,7 @@ export default function YouthTab() {
       cepOnly = subparts?.[1]?.replace(')', '') || '';
     }
 
-    setForm({
+    const initialData: FormState = {
       name: y.nome_completo,
       cpf: y.cpf ? formatCPF(y.cpf) : '',
       sex: y.sexo || '',
@@ -255,8 +265,10 @@ export default function YouthTab() {
       psychHelp: y.acompanhamento_psicologico ? 'Sim' : 'Não',
       interests: y.areas_interesse || [],
       interestOther: ''
-    });
-    
+    };
+
+    setForm(initialData);
+    initialFormRef.current = initialData;
     setErrors({});
     setShowPinResult(y.codigo_acesso);
     setStep(1);
@@ -265,12 +277,20 @@ export default function YouthTab() {
   };
 
   const requestClose = async () => {
-    if (!isFormDirty(form as any)) { closeModal(); return; }
+    if (!isFormDirty(form as any, initialFormRef.current as any)) { closeModal(); return; }
     const ok = await dialog.confirm('Confirmar Fechamento', 'Deseja fechar? Os dados preenchidos serão perdidos.', 'warning');
     if (ok) closeModal();
   };
   
-  const closeModal = () => { setModalOpen(false); setStep(1); setEditIdx(-1); setForm(EMPTY_FORM); setErrors({}); setShowPinResult(null); };
+  const closeModal = () => {
+    setModalOpen(false);
+    setStep(1);
+    setEditIdx(-1);
+    setForm(EMPTY_FORM);
+    initialFormRef.current = EMPTY_FORM;
+    setErrors({});
+    setShowPinResult(null);
+  };
 
   const toggleInterest = (v: string) =>
     setForm((f) => ({ ...f, interests: f.interests.includes(v) ? f.interests.filter((i) => i !== v) : [...f.interests, v] }));

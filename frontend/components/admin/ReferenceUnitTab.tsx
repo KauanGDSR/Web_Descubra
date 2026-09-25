@@ -140,8 +140,11 @@ export default function ReferenceUnitTab() {
     };
   }, []);
 
+  const initialFormRef = useRef(EMPTY_FORM);
+
   const openNew = () => {
     setForm(EMPTY_FORM);
+    initialFormRef.current = EMPTY_FORM;
     setShowFieldsOverride(false);
     setEditIdx(-1);
     setModalOpen(true);
@@ -149,7 +152,7 @@ export default function ReferenceUnitTab() {
 
   const openEdit = (idx: number) => {
     const u = units[idx];
-    setForm({
+    const initialData = {
       nome: u.nome,
       cidade_id: u.cidade_id || '',
       endereco: u.endereco || '',
@@ -163,7 +166,9 @@ export default function ReferenceUnitTab() {
       bairroInput: '',
       bairros_atendidos: u.bairros_atendidos || [],
       publico_atendido: u.publico_atendido || []
-    });
+    };
+    setForm(initialData);
+    initialFormRef.current = initialData;
     setShowFieldsOverride(true);
     setEditIdx(idx);
     setModalOpen(true);
@@ -173,7 +178,16 @@ export default function ReferenceUnitTab() {
     // Check if form is dirty
     const cleanForm = { ...form };
     delete (cleanForm as any).bairroInput;
-    if (!isFormDirty(cleanForm as any)) {
+    const cleanInitial = { ...initialFormRef.current };
+    delete (cleanInitial as any).bairroInput;
+
+    if (form.bairroInput?.trim().length > 0) {
+      const ok = await dialog.confirm('Confirmar Fechamento', 'Deseja fechar? Os dados preenchidos serão perdidos.', 'warning');
+      if (ok) closeModal();
+      return;
+    }
+
+    if (!isFormDirty(cleanForm as any, cleanInitial as any)) {
       closeModal();
       return;
     }
@@ -185,6 +199,7 @@ export default function ReferenceUnitTab() {
     setModalOpen(false);
     setEditIdx(-1);
     setForm(EMPTY_FORM);
+    initialFormRef.current = EMPTY_FORM;
   };
 
   const formatPhone = (val: string): string => {

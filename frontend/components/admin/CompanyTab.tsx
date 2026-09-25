@@ -87,11 +87,23 @@ export default function CompanyTab() {
     };
   }, []);
 
-  const openNew = () => { setCnpj(''); setForm(EMPTY); setDetailsVisible(false); setEditIdx(-1); setModalOpen(true); };
+  const initialFormRef = useRef(EMPTY);
+  const initialCnpjRef = useRef('');
+
+  const openNew = () => {
+    setCnpj('');
+    setForm(EMPTY);
+    setDetailsVisible(false);
+    setEditIdx(-1);
+    initialCnpjRef.current = '';
+    initialFormRef.current = EMPTY;
+    setModalOpen(true);
+  };
+
   const openEdit = (idx: number) => {
     const c = companies[idx];
-    setCnpj(formatCnpj(c.cnpj || ''));
-    setForm({
+    const initialCnpj = formatCnpj(c.cnpj || '');
+    const initialData = {
       razao: c.razao_social,
       fantasia: c.nome_fantasia || '',
       cep: formatCep(c.cep || ''),
@@ -102,20 +114,38 @@ export default function CompanyTab() {
       endereco: c.endereco || '',
       password: '',
       selo: c.selo || 'Nenhum'
-    });
+    };
+    setCnpj(initialCnpj);
+    setForm(initialData);
     setDetailsVisible(true);
     setEditIdx(idx);
+    initialCnpjRef.current = initialCnpj;
+    initialFormRef.current = initialData;
     setModalOpen(true);
   };
 
-  const isDirty = () => cnpj.trim().length > 0 || detailsVisible || isFormDirty(form as any);
+  const isDirty = () => {
+    const cleanCnpj = cnpj.replace(/\D/g, '');
+    const cleanInitialCnpj = initialCnpjRef.current.replace(/\D/g, '');
+    if (cleanCnpj !== cleanInitialCnpj) return true;
+    return isFormDirty(form as any, initialFormRef.current as any);
+  };
+
   const requestClose = async () => {
     if (!isDirty()) { closeModal(); return; }
     const ok = await dialog.confirm('Confirmar Fechamento', 'Deseja fechar? Os dados da empresa serão perdidos.', 'warning');
     if (ok) closeModal();
   };
 
-  const closeModal = () => { setModalOpen(false); setEditIdx(-1); setCnpj(''); setForm(EMPTY); setDetailsVisible(false); };
+  const closeModal = () => {
+    setModalOpen(false);
+    setEditIdx(-1);
+    setCnpj('');
+    setForm(EMPTY);
+    setDetailsVisible(false);
+    initialCnpjRef.current = '';
+    initialFormRef.current = EMPTY;
+  };
 
   const handleCnpjSearch = async () => {
     const clean = cnpj.replace(/\D/g, '');

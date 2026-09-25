@@ -64,10 +64,18 @@ export default function TechnicianTab() {
     };
   }, []);
 
-  const openNew = () => { setForm(EMPTY); setEditIdx(-1); setModalOpen(true); };
+  const initialFormRef = useRef(EMPTY);
+
+  const openNew = () => {
+    setForm(EMPTY);
+    initialFormRef.current = EMPTY;
+    setEditIdx(-1);
+    setModalOpen(true);
+  };
+
   const openEdit = (idx: number) => {
     const t = technicians[idx];
-    setForm({
+    const initialData = {
       name: t.nome,
       email: '', // E-mail e senha não são editáveis diretamente por motivos de segurança do Auth
       password: '',
@@ -76,18 +84,25 @@ export default function TechnicianTab() {
       cityId: t.equipamentos?.cidade_id || '',
       unitId: t.equipamento_id || '',
       telegramId: t.telegram_id || ''
-    });
+    };
+    setForm(initialData);
+    initialFormRef.current = initialData;
     setEditIdx(idx);
     setModalOpen(true);
   };
 
   const requestClose = async () => {
-    if (!isFormDirty(form as any)) { closeModal(); return; }
+    if (!isFormDirty(form as any, initialFormRef.current as any)) { closeModal(); return; }
     const ok = await dialog.confirm('Confirmar Fechamento', 'Deseja fechar? Os dados preenchidos serão perdidos.', 'warning');
     if (ok) closeModal();
   };
 
-  const closeModal = () => { setModalOpen(false); setEditIdx(-1); setForm(EMPTY); };
+  const closeModal = () => {
+    setModalOpen(false);
+    setEditIdx(-1);
+    setForm(EMPTY);
+    initialFormRef.current = EMPTY;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
