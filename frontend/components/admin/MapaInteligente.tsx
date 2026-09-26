@@ -207,6 +207,25 @@ function ControladorMapa({ centro, zoom }: { centro: [number, number]; zoom: num
   const map = useMap();
   const isFirstRender = useRef(true);
 
+  // Invalida o tamanho do mapa ao montar e redimensionar para evitar cortes de tiles
+  useEffect(() => {
+    if (map) {
+      const timer = setTimeout(() => {
+        map.invalidateSize();
+      }, 150);
+
+      const handleResize = () => {
+        map.invalidateSize();
+      };
+      window.addEventListener('resize', handleResize);
+
+      return () => {
+        clearTimeout(timer);
+        window.removeEventListener('resize', handleResize);
+      };
+    }
+  }, [map]);
+
   useEffect(() => {
     // Evita chamar setView no primeiro render para não quebrar a inicialização dos painéis do Leaflet
     if (isFirstRender.current) {
@@ -234,6 +253,16 @@ export default function MapaInteligente() {
   const [empresas, setEmpresas] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Ativa modo tela cheia na página para caber 100% em uma tela só sem rolagem
+  useEffect(() => {
+    document.body.classList.add('mapa-fullscreen-mode');
+    document.documentElement.classList.add('mapa-fullscreen-mode');
+    return () => {
+      document.body.classList.remove('mapa-fullscreen-mode');
+      document.documentElement.classList.remove('mapa-fullscreen-mode');
+    };
+  }, []);
 
   // Estados dos filtros
   const [filtroCidade, setFiltroCidade] = useState<string>('todos');
@@ -726,45 +755,78 @@ export default function MapaInteligente() {
     );
   }
 
+  const hasActiveFilter = filtroCidade !== 'todos' || filtroBairro !== 'todos' || filtroRisco !== 'todos' || filtroSexo !== 'todos' || jovemSelecionadoId !== '';
+
+  const handleResetFilters = () => {
+    setFiltroCidade('todos');
+    setFiltroBairro('todos');
+    setFiltroRisco('todos');
+    setFiltroSexo('todos');
+    setJovemSelecionadoId('');
+    setMapCenter([-17.3425, -44.9333]);
+    setMapZoom(13);
+  };
+
   return (
     <div className="map-dashboard-layout">
       {/* Painel superior de cabeçalho, filtros em formato select e legenda */}
       <div className="map-top-panel">
+        {/* Linha 1: Título, Métricas Rápidas e Legenda Compacta */}
         <div className="map-header-row">
           <div className="map-panel-info">
-            <h4>Vulnerabilidade Territorial</h4>
-            <p className="map-panel-desc">
-              Painel georreferenciado e demográfico do DescubraHub no Norte de Minas.
-            </p>
+            <h4>Mapa Inteligente</h4>
+            <span className="map-panel-tag">Norte de Minas</span>
           </div>
 
+          {/* Cards Estatísticos Integrados e Compactos */}
+          <div className="map-stats-compact-row">
+            <div className="map-stat-badge total" title="Total de jovens nos filtros atuais">
+              <span>Total:</span>
+              <strong>{statsFiltradas.total}</strong>
+            </div>
+            <div className="map-stat-badge alto" title="Jovens em Alto Risco (score >= 60)">
+              <span>Alto:</span>
+              <strong>{statsFiltradas.alto}</strong>
+            </div>
+            <div className="map-stat-badge medio" title="Jovens em Médio Risco (score 30 a 59)">
+              <span>Médio:</span>
+              <strong>{statsFiltradas.medio}</strong>
+            </div>
+            <div className="map-stat-badge baixo" title="Jovens em Baixo Risco (score < 30)">
+              <span>Baixo:</span>
+              <strong>{statsFiltradas.baixo}</strong>
+            </div>
+          </div>
+
+          {/* Legenda Horizontal Compacta */}
           <div className="map-legend-horizontal">
             <span className="legend-title">Legenda:</span>
             <div className="legend-items">
-              <div className="legend-item">
+              <div className="legend-item" title="Jovem em Alto Risco">
                 <span className="legend-color-dot" style={{ backgroundColor: coresRisco.alto }}></span>
-                <span>Alto Risco</span>
+                <span>Alto</span>
               </div>
-              <div className="legend-item">
+              <div className="legend-item" title="Jovem em Médio Risco">
                 <span className="legend-color-dot" style={{ backgroundColor: coresRisco.medio }}></span>
-                <span>Médio Risco</span>
+                <span>Médio</span>
               </div>
-              <div className="legend-item">
+              <div className="legend-item" title="Jovem em Baixo Risco">
                 <span className="legend-color-dot" style={{ backgroundColor: coresRisco.baixo }}></span>
-                <span>Baixo Risco</span>
+                <span>Baixo</span>
               </div>
-              <div className="legend-item">
+              <div className="legend-item" title="Unidade ou Entidade Parceira">
                 <span className="legend-color-dot" style={{ backgroundColor: '#3b82f6', borderRadius: '2px' }}></span>
-                <span>Entidade/Unidade</span>
+                <span>Unidade</span>
               </div>
-              <div className="legend-item">
+              <div className="legend-item" title="Empresa Concedente de Vaga">
                 <span className="legend-color-dot" style={{ backgroundColor: '#8b5cf6', borderRadius: '2px' }}></span>
-                <span>Empresa Parceira</span>
+                <span>Empresa</span>
               </div>
             </div>
           </div>
         </div>
 
+        {/* Linha 2: Barra Horizontal de Controles de Filtros */}
         <div className="map-controls-row">
           {/* Select: Cidade */}
           <div className="map-filter-group-select">
@@ -775,7 +837,7 @@ export default function MapaInteligente() {
               value={filtroCidade}
               onChange={(e) => handleCityChange(e.target.value)}
             >
-              <option value="todos">Todas as Cidades</option>
+              <option value="todos">Todas</option>
               <option value="Pirapora">Pirapora</option>
               <option value="Buritizeiro">Buritizeiro</option>
               <option value="Jequitaí">Jequitaí</option>
@@ -784,7 +846,7 @@ export default function MapaInteligente() {
 
           {/* Select: Bairro */}
           <div className="map-filter-group-select">
-            <label htmlFor="select-bairro" className="filter-label-select">Bairro (Pirapora)</label>
+            <label htmlFor="select-bairro" className="filter-label-select">Bairro</label>
             <select
               id="select-bairro"
               className="filter-select"
@@ -792,7 +854,7 @@ export default function MapaInteligente() {
               onChange={(e) => handleBairroChange(e.target.value)}
               disabled={filtroCidade !== 'todos' && filtroCidade !== 'Pirapora'}
             >
-              <option value="todos">Todos os Bairros</option>
+              <option value="todos">Todos</option>
               {bairrosPirapora.map((b) => (
                 <option key={b} value={b}>{b}</option>
               ))}
@@ -801,17 +863,17 @@ export default function MapaInteligente() {
 
           {/* Select: Nível de Risco */}
           <div className="map-filter-group-select">
-            <label htmlFor="select-risco" className="filter-label-select">Nível de Risco</label>
+            <label htmlFor="select-risco" className="filter-label-select">Risco</label>
             <select
               id="select-risco"
               className="filter-select"
               value={filtroRisco}
               onChange={(e) => setFiltroRisco(e.target.value)}
             >
-              <option value="todos">Todos os Riscos</option>
-              <option value="alto">Alto Risco (Crítico)</option>
-              <option value="medio">Médio Risco</option>
-              <option value="baixo">Baixo Risco</option>
+              <option value="todos">Todos</option>
+              <option value="alto">Alto (Crítico)</option>
+              <option value="medio">Médio</option>
+              <option value="baixo">Baixo</option>
             </select>
           </div>
 
@@ -824,24 +886,24 @@ export default function MapaInteligente() {
               value={filtroSexo}
               onChange={(e) => setFiltroSexo(e.target.value)}
             >
-              <option value="todos">Ambos os Sexos</option>
+              <option value="todos">Todos</option>
               <option value="masculino">Masculino</option>
               <option value="feminino">Feminino</option>
             </select>
           </div>
 
           {/* Select: Jovem (Auto-zoom) */}
-          <div className="map-filter-group-select" style={{ flexGrow: 1 }}>
-            <label htmlFor="select-jovem" className="filter-label-select">Localizar Jovem</label>
-            <div style={{ position: 'relative' }}>
+          <div className="map-filter-group-select" style={{ flexGrow: 1.5 }}>
+            <label htmlFor="select-jovem" className="filter-label-select">Localizar</label>
+            <div style={{ position: 'relative', width: '100%' }}>
               <select
                 id="select-jovem"
                 className="filter-select"
                 value={jovemSelecionadoId}
                 onChange={(e) => handleJovemSelect(e.target.value)}
-                style={{ paddingLeft: '2rem' }}
+                style={{ paddingLeft: '1.75rem' }}
               >
-                <option value="">Nenhum selecionado</option>
+                <option value="">Selecione um jovem...</option>
                 {dynamicPontosVulnerabilidade
                   .sort((a, b) => a.nome.localeCompare(b.nome))
                   .map(p => (
@@ -849,29 +911,21 @@ export default function MapaInteligente() {
                   ))
                 }
               </select>
-              <Search size={14} style={{ position: 'absolute', left: '0.6rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-light)', pointerEvents: 'none' }} />
+              <Search size={13} style={{ position: 'absolute', left: '0.5rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-light)', pointerEvents: 'none' }} />
             </div>
           </div>
 
-          {/* Cards Estatísticos Responsivos */}
-          <div className="map-stats-row">
-            <div className="map-stat-card total">
-              <span className="map-stat-num">{statsFiltradas.total}</span>
-              <span className="map-stat-lbl">Jovens</span>
-            </div>
-            <div className="map-stat-card alto">
-              <span className="map-stat-num">{statsFiltradas.alto}</span>
-              <span className="map-stat-lbl">Alto Risco</span>
-            </div>
-            <div className="map-stat-card medio">
-              <span className="map-stat-num">{statsFiltradas.medio}</span>
-              <span className="map-stat-lbl">Médio</span>
-            </div>
-            <div className="map-stat-card baixo">
-              <span className="map-stat-num">{statsFiltradas.baixo}</span>
-              <span className="map-stat-lbl">Baixo</span>
-            </div>
-          </div>
+          {/* Botão Resetar Filtros */}
+          {hasActiveFilter && (
+            <button
+              type="button"
+              onClick={handleResetFilters}
+              className="map-filter-reset-btn"
+              title="Restaurar visão geral e limpar filtros"
+            >
+              Limpar
+            </button>
+          )}
         </div>
       </div>
 
