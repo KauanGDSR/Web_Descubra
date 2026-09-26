@@ -83,6 +83,16 @@ function calcAge(dob: string): number {
   return age;
 }
 
+function formatDateBR(val: string): string {
+  if (!val) return '—';
+  const parts = val.split('-');
+  if (parts.length === 3) {
+    const [year, month, day] = parts;
+    return `${day}/${month}/${year}`;
+  }
+  return val;
+}
+
 function calcVulner(form: FormState): string {
   let p = 0;
   if (form.bolsa === 'Sim') p += 2;
@@ -565,7 +575,7 @@ export default function YouthTab() {
       <div className="admin-form-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
         <div>
           <h2 className="admin-form-title">Jovens Aprendizes</h2>
-          <p className="admin-form-subtitle">Consulte e gerencie a lista de jovens cadastrados no Supabase</p>
+          <p className="admin-form-subtitle">Consulte e gerencie a lista de jovens cadastrados</p>
         </div>
         <button
           className="btn btn-primary"
@@ -860,7 +870,7 @@ export default function YouthTab() {
                 <div className="summary-grid">
                   <div className="summary-item"><span className="summary-label">Nome</span><span className="summary-value">{form.name || '—'}</span></div>
                   <div className="summary-item"><span className="summary-label">CPF</span><span className="summary-value">{form.cpf || '—'}</span></div>
-                  <div className="summary-item"><span className="summary-label">Nascimento</span><span className="summary-value">{form.dob ? `${form.dob} (${calcAge(form.dob)} anos)` : '—'}</span></div>
+                  <div className="summary-item"><span className="summary-label">Nascimento</span><span className="summary-value">{form.dob ? `${formatDateBR(form.dob)} (${calcAge(form.dob)} anos)` : '—'}</span></div>
                   <div className="summary-item"><span className="summary-label">Cidade Pólo</span><span className="summary-value">{form.city || '—'}</span></div>
                   <div className="summary-item"><span className="summary-label">Vulnerabilidade Calculada</span><span className="summary-value">{calcVulner(form)}</span></div>
                   <div className="summary-item"><span className="summary-label">Interesses</span><span className="summary-value">{form.interests.join(', ') || '—'}</span></div>

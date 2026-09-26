@@ -223,7 +223,7 @@ export default function TechnicianTab() {
       <div className="admin-form-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
         <div>
           <h2 className="admin-form-title">Técnicos Cadastrados</h2>
-          <p className="admin-form-subtitle">Gerencie os técnicos de referência no banco de dados</p>
+          <p className="admin-form-subtitle">Gerencie os técnicos de referência</p>
         </div>
         <button
           className="btn btn-primary"
@@ -284,7 +284,7 @@ export default function TechnicianTab() {
         </button>
         <div className="admin-form-header">
           <h2 className="admin-form-title">{editIdx >= 0 ? 'Editar Técnico' : 'Novo Técnico'}</h2>
-          <p className="admin-form-subtitle">Preencha os dados do técnico de referência para gravação no Supabase</p>
+          <p className="admin-form-subtitle">Preencha os dados do técnico de referência</p>
         </div>
         <form className="admin-form" onSubmit={handleSubmit}>
           <div className="admin-grid-form">
