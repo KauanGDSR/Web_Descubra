@@ -893,45 +893,6 @@ export default function ReportTab() {
               </div>
             </div>
 
-            {/* Banner de filtro ativo vindo da Fila Inteligente */}
-            {filterJovemId && (
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.6rem',
-                backgroundColor: 'rgba(13, 92, 58, 0.08)',
-                border: '1px solid rgba(13, 92, 58, 0.2)',
-                borderRadius: '6px',
-                padding: '0.55rem 0.95rem',
-                fontSize: '0.85rem',
-                color: 'var(--color-secondary)',
-                fontWeight: 600,
-                marginBottom: '0.5rem'
-              }}>
-                <span>📍 Exibindo histórico de acompanhamentos de: <b>{searchTerm || 'Jovem Selecionado'}</b></span>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setFilterJovemId(null);
-                    setSearchTerm('');
-                    setSelectedYouth('');
-                  }}
-                  style={{
-                    border: 'none',
-                    background: 'none',
-                    color: 'var(--color-error)',
-                    fontSize: '0.78rem',
-                    cursor: 'pointer',
-                    textDecoration: 'underline',
-                    marginLeft: 'auto',
-                    fontWeight: 600
-                  }}
-                >
-                  Limpar filtro e ver todos
-                </button>
-              </div>
-            )}
-
             {/* Filters */}
             <div className="filter-row">
               <div className="filter-item">
@@ -988,7 +949,10 @@ export default function ReportTab() {
                   type="text"
                   placeholder="Nome do jovem..."
                   value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
+                  onChange={(e) => {
+                    setSearchTerm(e.target.value);
+                    if (filterJovemId) setFilterJovemId(null);
+                  }}
                 />
               </div>
             </div>
