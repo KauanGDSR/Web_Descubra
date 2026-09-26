@@ -15,7 +15,6 @@ import {
   GraduationCap,
   Gift,
   Clock,
-  UserPlus,
   Trophy
 } from 'lucide-react';
 
@@ -361,31 +360,6 @@ export default function AdminOverviewPage() {
                    <span style={{ fontSize: '1.1rem', fontWeight: 800, color: 'var(--color-primary)' }}>{stats.totalEncaminhamentos}</span>
                  </div>
                </div>
-             </div>
-           </div>
-
-           {/* Quick Access Box */}
-           <div className="report-stat-card" style={{ display: 'block', padding: '1.5rem', width: '100%' }}>
-             <h3 style={{ fontFamily: 'var(--font-body)', fontSize: '1rem', fontWeight: 700, color: 'var(--color-primary)', marginBottom: '1rem' }}>
-               Acesso Rápido a Operações
-             </h3>
-
-             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
-               <Link href="/admin/tecnicos" style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem', backgroundColor: 'rgba(10,37,64,0.02)', border: '1px solid rgba(10,37,64,0.06)', padding: '1rem', borderRadius: '8px' }} className="hover-card">
-                 <div style={{ width: '28px', height: '28px', borderRadius: '6px', backgroundColor: 'var(--color-orange)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', color: '#fff', padding: '0.35rem' }}>
-                   <UserPlus size={14} />
-                 </div>
-                 <h4 style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--color-primary)', marginTop: '0.25rem' }}>Novo Técnico</h4>
-                 <p style={{ fontSize: '0.65rem', color: 'var(--color-text-light)', fontWeight: 500 }}>Cadastre um orientador de campo.</p>
-               </Link>
-
-               <Link href="/admin/jovens" style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem', backgroundColor: 'rgba(10,37,64,0.02)', border: '1px solid rgba(10,37,64,0.06)', padding: '1rem', borderRadius: '8px' }} className="hover-card">
-                 <div style={{ width: '28px', height: '28px', borderRadius: '6px', backgroundColor: 'var(--color-orange)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', color: '#fff', padding: '0.35rem' }}>
-                   <Users size={14} />
-                 </div>
-                 <h4 style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--color-primary)', marginTop: '0.25rem' }}>Novo Jovem</h4>
-                 <p style={{ fontSize: '0.65rem', color: 'var(--color-text-light)', fontWeight: 500 }}>Registre um jovem aprendiz.</p>
-               </Link>
              </div>
            </div>
 
