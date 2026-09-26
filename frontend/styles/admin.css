@@ -186,10 +186,35 @@
   flex-shrink: 0;
   border-radius: 6px;
   transition: transform var(--transition-fast);
+  position: relative;
 }
 
 .sidebar-nav-item:hover .sidebar-item-icon {
   transform: scale(1.05);
+}
+
+.sidebar-icon-badge-dot {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: var(--color-orange, #F97316);
+  border: 2px solid #ffffff;
+  box-shadow: 0 0 0 1px rgba(249, 115, 22, 0.5);
+  animation: sidebar-badge-pulse 2s infinite ease-in-out;
+  pointer-events: none;
+  z-index: 2;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.admin-hover-sidebar:hover .sidebar-icon-badge-dot,
+.admin-hover-sidebar.expanded .sidebar-icon-badge-dot,
+.admin-hover-sidebar.mobile-open .sidebar-icon-badge-dot {
+  opacity: 0;
+  transform: scale(0.4);
+  pointer-events: none;
 }
 
 .sidebar-item-label {
@@ -202,6 +227,63 @@
   transition: opacity 0.2s ease, transform 0.2s ease;
   overflow: hidden;
   text-overflow: ellipsis;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex: 1;
+  min-width: 0;
+}
+
+.sidebar-item-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sidebar-badge-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #F97316 0%, #EA580C 100%);
+  color: #ffffff;
+  font-size: 0.72rem;
+  font-weight: 800;
+  line-height: 1;
+  box-shadow: 0 2px 6px rgba(249, 115, 22, 0.4);
+  flex-shrink: 0;
+  margin-left: 0.4rem;
+  letter-spacing: -0.02em;
+  animation: sidebar-badge-pill-pulse 3s infinite ease-in-out;
+}
+
+@keyframes sidebar-badge-pulse {
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(249, 115, 22, 0.8);
+  }
+  70% {
+    transform: scale(1.2);
+    box-shadow: 0 0 0 6px rgba(249, 115, 22, 0);
+  }
+  100% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(249, 115, 22, 0);
+  }
+}
+
+@keyframes sidebar-badge-pill-pulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 2px 6px rgba(249, 115, 22, 0.4);
+  }
+  50% {
+    transform: scale(1.08);
+    box-shadow: 0 3px 10px rgba(249, 115, 22, 0.65);
+  }
 }
 
 .admin-hover-sidebar:hover .sidebar-item-label,

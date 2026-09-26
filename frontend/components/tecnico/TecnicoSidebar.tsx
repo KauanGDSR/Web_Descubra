@@ -5,6 +5,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { createClient } from '@/utils/supabase/client';
 import LogoutButton from '@/frontend/components/ui/LogoutButton';
+import { useAdminNotificationCounts } from '@/frontend/hooks/useAdminNotificationCounts';
 
 const TABS = [
   {
@@ -102,6 +103,13 @@ export default function TecnicoSidebar() {
   const [role, setRole] = useState<string | null>(null);
   const [isHovered, setIsHovered] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const { resgatesPendentes, depoimentosPendentes } = useAdminNotificationCounts();
+
+  const getBadgeCount = (href: string) => {
+    if (href === '/tecnicos/resgates') return resgatesPendentes;
+    if (href === '/tecnicos/depoimentos') return depoimentosPendentes;
+    return 0;
+  };
 
   useEffect(() => {
     const fetchUserRole = async () => {
@@ -196,6 +204,11 @@ export default function TecnicoSidebar() {
         <nav className="sidebar-nav-container" aria-label="Navegação do painel">
           {TABS.map((tab) => {
             const active = isActive(tab.href);
+            const badgeCount = getBadgeCount(tab.href);
+            const tooltipTitle = !isExpanded
+              ? (badgeCount > 0 ? `${tab.label} (${badgeCount} pendente${badgeCount > 1 ? 's' : ''})` : tab.label)
+              : undefined;
+
             return (
               <Link
                 key={tab.href}
@@ -203,15 +216,29 @@ export default function TecnicoSidebar() {
                 className={`sidebar-nav-item ${active ? 'active' : ''}`}
                 role="tab"
                 aria-selected={active}
-                title={!isExpanded ? tab.label : undefined}
+                title={tooltipTitle}
                 onClick={() => setIsMobileOpen(false)}
               >
                 {active && <span className="sidebar-active-indicator" />}
                 <div className="sidebar-item-icon">
                   {tab.icon}
+                  {badgeCount > 0 && (
+                    <span 
+                      className="sidebar-icon-badge-dot" 
+                      aria-label={`${badgeCount} pendentes`} 
+                    />
+                  )}
                 </div>
                 <span className="sidebar-item-label">
-                  {tab.label}
+                  <span className="sidebar-item-text">{tab.label}</span>
+                  {badgeCount > 0 && (
+                    <span 
+                      className="sidebar-badge-count" 
+                      title={`${badgeCount} pendente${badgeCount > 1 ? 's' : ''}`}
+                    >
+                      {badgeCount > 99 ? '99+' : badgeCount}
+                    </span>
+                  )}
                 </span>
               </Link>
             );

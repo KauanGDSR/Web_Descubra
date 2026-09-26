@@ -85,6 +85,9 @@ export default function DepoimentosPage() {
 
       dialog.alert('Depoimento Aprovado', `O relato de <b>${jovemNome}</b> foi publicado com sucesso!`, 'success');
       loadData();
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('update-admin-badges'));
+      }
     } catch (err: any) {
       console.error(err);
       dialog.alert('Erro ao Salvar', err.message || 'Erro ao tentar atualizar status no Supabase.', 'danger');
@@ -108,6 +111,9 @@ export default function DepoimentosPage() {
 
       dialog.alert('Depoimento Rejeitado', `O relato de <b>${jovemNome}</b> foi rejeitado.`, 'success');
       loadData();
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('update-admin-badges'));
+      }
     } catch (err: any) {
       console.error(err);
       dialog.alert('Erro ao Salvar', err.message || 'Erro ao tentar atualizar status no Supabase.', 'danger');

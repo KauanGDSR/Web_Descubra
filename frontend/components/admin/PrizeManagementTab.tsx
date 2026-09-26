@@ -149,6 +149,9 @@ export default function PrizeManagementTab() {
 
       await dialog.alert('Sucesso', data.mensagem || 'Status do resgate atualizado com sucesso!', 'success');
       loadData();
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('update-admin-badges'));
+      }
     } catch (err: any) {
       console.error(err);
       dialog.alert('Erro ao Atualizar', err.message || 'Erro interno ao atualizar resgate.', 'danger');
