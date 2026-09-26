@@ -69,7 +69,7 @@ export default function AnalyticsTab() {
         supabase.from('jovens').select('*, equipamentos(id, nome, cidade_id, cidades(id, nome))').order('created_at', { ascending: false }),
         supabase.from('acompanhamentos').select('id, jovem_id, assiduidade, desempenho, comportamento, data_registro'),
         supabase.from('encaminhamentos_vagas').select('*, vagas_disponiveis(id, titulo, tipo, empresas_parceiras(razao_social))'),
-        supabase.from('vagas_disponiveis').select('*'),
+        supabase.from('vagas_disponiveis').select('*, empresas_parceiras(id, razao_social, nome_fantasia)').order('created_at', { ascending: false }),
         supabase.from('cidades').select('*').order('nome'),
         supabase.from('equipamentos').select('*, cidades(id, nome)').order('nome')
       ]);
@@ -932,6 +932,7 @@ export default function AnalyticsTab() {
                     <thead>
                       <tr>
                         <th>Título da Vaga</th>
+                        <th>Empresa Ofertante</th>
                         <th>Modalidade</th>
                         <th>Horário</th>
                         <th>Bolsa Auxílio</th>
@@ -941,18 +942,27 @@ export default function AnalyticsTab() {
                     </thead>
                     <tbody>
                       {vagas.length === 0 ? (
-                        <tr><td colSpan={6} style={{ textAlign: 'center', padding: '1.5rem', color: 'var(--color-text-light)' }}>Nenhuma vaga cadastrada no momento.</td></tr>
+                        <tr><td colSpan={7} style={{ textAlign: 'center', padding: '1.5rem', color: 'var(--color-text-light)' }}>Nenhuma vaga cadastrada no momento.</td></tr>
                       ) : (
-                        vagas.map((v) => (
-                          <tr key={v.id}>
-                            <td style={{ fontWeight: 600 }}>{v.titulo}</td>
-                            <td><span className="badge-status badge-presenca">{v.tipo}</span></td>
-                            <td>{v.horario || 'A definir'}</td>
-                            <td>R$ {v.bolsa_auxilio ? Number(v.bolsa_auxilio).toLocaleString('pt-BR') : '0,00'}</td>
-                            <td>{v.idade_minima ? `${v.idade_minima} anos` : 'Livre'}</td>
-                            <td><span className="badge-status badge-presenca">{v.status}</span></td>
-                          </tr>
-                        ))
+                        vagas.map((v) => {
+                          const nomeEmpresa = v.empresas_parceiras?.nome_fantasia || v.empresas_parceiras?.razao_social || 'Não informada';
+                          return (
+                            <tr key={v.id}>
+                              <td style={{ fontWeight: 600 }}>{v.titulo}</td>
+                              <td style={{ fontWeight: 600, color: 'var(--color-primary)' }}>
+                                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}>
+                                  <Building2 size={14} style={{ color: 'var(--color-secondary)', flexShrink: 0 }} />
+                                  {nomeEmpresa}
+                                </span>
+                              </td>
+                              <td><span className="badge-status badge-presenca">{v.tipo}</span></td>
+                              <td>{v.horario || 'A definir'}</td>
+                              <td>R$ {v.bolsa_auxilio ? Number(v.bolsa_auxilio).toLocaleString('pt-BR') : '0,00'}</td>
+                              <td>{v.idade_minima ? `${v.idade_minima} anos` : 'Livre'}</td>
+                              <td><span className="badge-status badge-presenca">{v.status}</span></td>
+                            </tr>
+                          );
+                        })
                       )}
                     </tbody>
                   </table>
