@@ -41,8 +41,8 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Formato de e-mail inválido.' }, { status: 400 });
     }
 
-    if (senha.length < 6) {
-      return NextResponse.json({ error: 'A senha deve ter pelo menos 6 caracteres.' }, { status: 400 });
+    if (senha.length < 8) {
+      return NextResponse.json({ error: 'A senha deve ter pelo menos 8 caracteres.' }, { status: 400 });
     }
 
     const admin = getAdminClient();

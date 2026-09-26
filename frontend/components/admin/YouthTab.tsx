@@ -347,8 +347,8 @@ export default function YouthTab() {
 
         if (!form.password) {
           newErrors.password = 'Senha de acesso é obrigatória';
-        } else if (form.password.length < 6) {
-          newErrors.password = 'A senha deve ter pelo menos 6 caracteres';
+        } else if (form.password.length < 8) {
+          newErrors.password = 'A senha deve ter pelo menos 8 caracteres';
         }
       }
 
@@ -741,7 +741,7 @@ export default function YouthTab() {
                         type="password"
                         value={form.password}
                         onChange={set('password')}
-                        placeholder="Mínimo 6 caracteres"
+                        placeholder="Mínimo 8 caracteres"
                         required
                       />
                       {errors.password && <span className="error-text" style={{ color: 'var(--color-error)', fontSize: '0.75rem', marginTop: '0.25rem', display: 'block' }}>{errors.password}</span>}
