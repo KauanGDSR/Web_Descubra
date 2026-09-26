@@ -59,10 +59,10 @@ export default function ReferenceUnitTab() {
     }
     setSearchingCep(true);
     try {
-      const res = await fetch(`https://viacep.com.br/ws/${clean}/json/`);
+      const res = await fetch(`/api/cep/${clean}`);
       if (!res.ok) throw new Error('CEP não encontrado');
       const data = await res.json();
-      if (data.erro) throw new Error('CEP não encontrado');
+      if (data.error) throw new Error(data.error);
 
       let matchedCityId = form.cidade_id;
       if (data.localidade) {

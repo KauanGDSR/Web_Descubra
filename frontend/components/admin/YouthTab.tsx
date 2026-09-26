@@ -407,10 +407,10 @@ export default function YouthTab() {
     }
     setSearchingCep(true);
     try {
-      const res = await fetch(`https://viacep.com.br/ws/${clean}/json/`);
+      const res = await fetch(`/api/cep/${clean}`);
       if (!res.ok) throw new Error('CEP não encontrado');
       const data = await res.json();
-      if (data.erro) throw new Error('CEP não encontrado');
+      if (data.error) throw new Error(data.error);
 
       // Encontra a cidade correspondente no select de cidades pólo
       let matchedCity = form.city;
