@@ -53,7 +53,7 @@ async function main() {
     }
   }
 
-  // Define as credenciais do admin (compatível com acesso rápido e login direto)
+  // Define as credenciais do admin
   const adminEmail = 'admin@descubra.com';
   const adminPassword = 'AdminDescubra2026!';
 
