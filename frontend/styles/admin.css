@@ -591,3 +591,25 @@ a.admin-tab-btn { display: flex; align-items: center; gap: 0.75rem; width: 100%;
 @media (max-width: 640px) {
   .stats-grid-4 { grid-template-columns: 1fr; }
 }
+
+/* ===================== GLOBAL PRINT STYLES ===================== */
+@media print {
+  .mobile-hamburger-trigger,
+  .sidebar-mobile-backdrop,
+  .admin-hover-sidebar,
+  .admin-sidebar,
+  .no-print {
+    display: none !important;
+    visibility: hidden !important;
+  }
+
+  .admin-main-area {
+    margin-left: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+  }
+
+  .admin-shell {
+    background: #ffffff !important;
+  }
+}

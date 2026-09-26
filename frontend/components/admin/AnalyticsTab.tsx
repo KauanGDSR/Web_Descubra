@@ -537,12 +537,23 @@ export default function AnalyticsTab() {
           align-items: flex-start;
         }
         @media print {
-          .admin-sidebar, .analytics-subnav, .filter-row, .no-print {
+          .admin-sidebar,
+          .admin-hover-sidebar,
+          .mobile-hamburger-trigger,
+          .sidebar-mobile-backdrop,
+          .analytics-subnav,
+          .filter-row,
+          .no-print {
             display: none !important;
+            visibility: hidden !important;
           }
           .admin-main-area {
             margin: 0 !important;
             padding: 0 !important;
+            width: 100% !important;
+          }
+          body, html {
+            background: #ffffff !important;
           }
         }
       `}</style>

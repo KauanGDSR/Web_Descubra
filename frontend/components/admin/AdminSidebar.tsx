@@ -186,7 +186,7 @@ export default function AdminSidebar() {
       {/* Botão flutuante mobile para abrir gaveta */}
       <button
         type="button"
-        className="mobile-hamburger-trigger"
+        className="mobile-hamburger-trigger no-print"
         onClick={() => setIsMobileOpen(!isMobileOpen)}
         aria-label="Abrir Menu de Navegação"
         title="Menu"
@@ -199,7 +199,7 @@ export default function AdminSidebar() {
       {/* Backdrop escuro no mobile */}
       {isMobileOpen && (
         <div
-          className="sidebar-mobile-backdrop"
+          className="sidebar-mobile-backdrop no-print"
           onClick={() => setIsMobileOpen(false)}
           aria-hidden="true"
         />
@@ -207,7 +207,7 @@ export default function AdminSidebar() {
 
       {/* Barra Lateral estilo Hambúrguer com expansão ao passar o mouse */}
       <aside
-        className={`admin-hover-sidebar ${isExpanded ? 'expanded' : ''} ${isMobileOpen ? 'mobile-open' : ''}`}
+        className={`admin-hover-sidebar no-print ${isExpanded ? 'expanded' : ''} ${isMobileOpen ? 'mobile-open' : ''}`}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
         aria-label="Menu Lateral"
