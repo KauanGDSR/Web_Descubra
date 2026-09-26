@@ -5,7 +5,7 @@ import Modal from '@/frontend/components/ui/Modal';
 import CardEditBtn from '@/frontend/components/ui/CardEditBtn';
 import { useDialog } from '@/frontend/components/ui/CustomDialog';
 import { createClient } from '@/utils/supabase/client';
-import { isFormDirty } from '@/shared/data';
+import { isFormDirty, getBairrosDaCidade } from '@/shared/data';
 
 import type { City, ExtendedUnit } from '@/backend/types';
 
@@ -50,6 +50,21 @@ export default function ReferenceUnitTab() {
   const isMounted = useRef(true);
 
   const showAddressFields = editIdx >= 0 || !!form.endereco || !!form.bairro || !!form.cidade_id || showFieldsOverride;
+
+  // Resolução inteligente de bairros para a cidade selecionada (via CEP ou select)
+  const selectedCity = cities.find((c) => c.id === form.cidade_id);
+  const selectedCityName = selectedCity?.nome || '';
+  const catalogedBairros = getBairrosDaCidade(selectedCityName);
+  const allSuggestedBairros = Array.from(
+    new Set([
+      ...catalogedBairros,
+      ...(form.bairro ? [form.bairro.trim()] : [])
+    ])
+  ).filter(Boolean);
+
+  const unselectedSuggestedBairros = allSuggestedBairros.filter(
+    (b) => !form.bairros_atendidos.some((item) => item.trim().toLowerCase() === b.trim().toLowerCase())
+  );
 
   const handleCepSearch = async () => {
     const clean = form.cep.replace(/\D/g, '');
@@ -243,11 +258,11 @@ export default function ReferenceUnitTab() {
     });
   };
 
-  // Add neighborhood to list
+  // Add neighborhood to list (manual input)
   const addBairro = () => {
     const val = form.bairroInput.trim();
     if (!val) return;
-    if (form.bairros_atendidos.includes(val)) {
+    if (form.bairros_atendidos.some((b) => b.trim().toLowerCase() === val.toLowerCase())) {
       setForm((f) => ({ ...f, bairroInput: '' }));
       return;
     }
@@ -255,6 +270,40 @@ export default function ReferenceUnitTab() {
       ...f,
       bairros_atendidos: [...f.bairros_atendidos, val],
       bairroInput: ''
+    }));
+  };
+
+  // Add specific neighborhood directly from selector or suggestion chip
+  const addSpecificBairro = (val: string) => {
+    const trimmed = val.trim();
+    if (!trimmed) return;
+    if (form.bairros_atendidos.some((b) => b.trim().toLowerCase() === trimmed.toLowerCase())) {
+      return;
+    }
+    setForm((f) => ({
+      ...f,
+      bairros_atendidos: [...f.bairros_atendidos, trimmed]
+    }));
+  };
+
+  // Add all cataloged neighborhoods of the current city
+  const addAllCityBairros = () => {
+    setForm((f) => {
+      const existingLower = new Set(f.bairros_atendidos.map((b) => b.trim().toLowerCase()));
+      const toAdd = allSuggestedBairros.filter((b) => !existingLower.has(b.trim().toLowerCase()));
+      if (toAdd.length === 0) return f;
+      return {
+        ...f,
+        bairros_atendidos: [...f.bairros_atendidos, ...toAdd]
+      };
+    });
+  };
+
+  // Clear all neighborhoods
+  const clearAllBairros = () => {
+    setForm((f) => ({
+      ...f,
+      bairros_atendidos: []
     }));
   };
 
@@ -606,46 +655,234 @@ export default function ReferenceUnitTab() {
           {/* Sessão 4: Área de Abrangência */}
           <h3 className="summary-section-title">Área de Abrangência</h3>
 
-          {/* Bairros atendidos com Tags Input dinâmico */}
-          <div className="form-group full-width" style={{ marginBottom: '1.25rem' }}>
-            <label className="form-label">Bairros Atendidos</label>
-            <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.5rem' }}>
-              <input
-                className="form-control"
-                value={form.bairroInput}
-                onChange={set('bairroInput')}
-                onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addBairro())}
-                placeholder="Digite o nome de um bairro e pressione Enter"
-              />
-              <button
-                type="button"
-                className="btn btn-outline"
-                onClick={addBairro}
-                style={{ borderRadius: 'var(--border-radius-sm)', padding: '0 1rem' }}
-              >
-                Adicionar
-              </button>
-            </div>
-            <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap', minHeight: '34px', padding: '0.5rem', border: '1px solid rgba(10,37,64,0.1)', borderRadius: '4px', backgroundColor: '#fcfcfd' }}>
-              {form.bairros_atendidos.length === 0 ? (
-                <span style={{ fontSize: '0.8rem', color: 'var(--color-text-light)', fontStyle: 'italic', display: 'flex', alignItems: 'center' }}>Nenhum bairro adicionado ainda.</span>
+          {/* Bairros atendidos com Seletor por Cidade + Chips Rápidos + Input Manual */}
+          <div className="form-group full-width" style={{ marginBottom: '1.5rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.45rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+              <label className="form-label" style={{ marginBottom: 0 }}>
+                Bairros Atendidos
+              </label>
+              {selectedCityName ? (
+                <span style={{ fontSize: '0.78rem', color: 'var(--color-secondary)', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                  📍 Município: {selectedCityName}
+                </span>
               ) : (
-                form.bairros_atendidos.map((b) => (
-                  <span
-                    key={b}
-                    style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.72rem', padding: '0.2rem 0.5rem', borderRadius: '4px', backgroundColor: 'rgba(10,37,64,0.06)', color: 'var(--color-primary)', border: '1px solid rgba(10,37,64,0.1)' }}
-                  >
-                    {b}
-                    <button
-                      type="button"
-                      onClick={() => removeBairro(b)}
-                      style={{ border: 'none', background: 'none', padding: 0, cursor: 'pointer', display: 'inline-flex', color: 'var(--color-error)' }}
-                    >
-                      &times;
-                    </button>
-                  </span>
-                ))
+                <span style={{ fontSize: '0.75rem', color: 'var(--color-text-light)' }}>
+                  💡 Dica: Ao buscar o CEP ou selecionar o Município, os bairros da cidade aparecem aqui para seleção
+                </span>
               )}
+            </div>
+
+            {/* Painel de seleção de bairros da cidade (quando município identificado) */}
+            {selectedCityName && allSuggestedBairros.length > 0 && (
+              <div style={{ 
+                backgroundColor: 'rgba(13, 92, 58, 0.04)', 
+                border: '1px solid rgba(13, 92, 58, 0.16)', 
+                borderRadius: '6px', 
+                padding: '0.75rem 0.85rem', 
+                marginBottom: '0.85rem' 
+              }}>
+                <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap', marginBottom: '0.55rem' }}>
+                  <div style={{ flex: '1 1 240px', minWidth: '200px' }}>
+                    <select
+                      className="form-control"
+                      style={{ fontSize: '0.82rem', padding: '0.4rem 0.6rem' }}
+                      value=""
+                      onChange={(e) => {
+                        if (e.target.value) {
+                          addSpecificBairro(e.target.value);
+                          e.target.value = '';
+                        }
+                      }}
+                      disabled={unselectedSuggestedBairros.length === 0}
+                    >
+                      <option value="">
+                        {unselectedSuggestedBairros.length > 0
+                          ? `+ Selecionar bairro de ${selectedCityName} (${unselectedSuggestedBairros.length} disponíveis)...`
+                          : `✓ Todos os bairros de ${selectedCityName} já foram adicionados`}
+                      </option>
+                      {unselectedSuggestedBairros.map((b) => (
+                        <option key={b} value={b}>{b}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <button
+                    type="button"
+                    className="btn btn-outline"
+                    onClick={addAllCityBairros}
+                    disabled={unselectedSuggestedBairros.length === 0}
+                    style={{ 
+                      fontSize: '0.78rem', 
+                      padding: '0.4rem 0.75rem', 
+                      borderRadius: 'var(--border-radius-sm)',
+                      whiteSpace: 'nowrap',
+                      backgroundColor: '#fff',
+                      opacity: unselectedSuggestedBairros.length === 0 ? 0.6 : 1
+                    }}
+                    title="Adicionar todos os bairros desta cidade de uma só vez"
+                  >
+                    + Adicionar Todos ({allSuggestedBairros.length})
+                  </button>
+                </div>
+
+                {/* Chips de clique rápido */}
+                {unselectedSuggestedBairros.length > 0 ? (
+                  <div>
+                    <span style={{ fontSize: '0.72rem', color: 'var(--color-text-light)', display: 'block', marginBottom: '0.4rem' }}>
+                      Ou clique nos bairros abaixo para adicionar rapidamente sem errar o nome:
+                    </span>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.35rem', maxHeight: '110px', overflowY: 'auto', paddingRight: '2px' }}>
+                      {unselectedSuggestedBairros.map((b) => (
+                        <button
+                          key={b}
+                          type="button"
+                          onClick={() => addSpecificBairro(b)}
+                          style={{
+                            border: '1px solid rgba(13, 92, 58, 0.25)',
+                            backgroundColor: '#ffffff',
+                            color: 'var(--color-secondary)',
+                            borderRadius: '12px',
+                            padding: '0.15rem 0.55rem',
+                            fontSize: '0.73rem',
+                            fontWeight: 500,
+                            cursor: 'pointer',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '0.25rem',
+                            transition: 'all 0.15s ease'
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.backgroundColor = 'var(--color-secondary)';
+                            e.currentTarget.style.color = '#ffffff';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.backgroundColor = '#ffffff';
+                            e.currentTarget.style.color = 'var(--color-secondary)';
+                          }}
+                        >
+                          <span style={{ fontWeight: 700 }}>+</span> {b}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <span style={{ fontSize: '0.75rem', color: '#16a34a', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                    ✓ Todos os {allSuggestedBairros.length} bairros catalogados de {selectedCityName} foram adicionados à lista de atendimento.
+                  </span>
+                )}
+              </div>
+            )}
+
+            {/* Digitação manual caso o bairro não esteja na lista */}
+            <div style={{ marginBottom: '0.75rem' }}>
+              <span style={{ fontSize: '0.75rem', color: 'var(--color-text-light)', display: 'block', marginBottom: '0.3rem' }}>
+                {selectedCityName 
+                  ? `Caso a unidade atenda outro bairro que não esteja na lista de ${selectedCityName}, digite abaixo:` 
+                  : 'Digite o nome do bairro manualmente e adicione:'}
+              </span>
+              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                <input
+                  className="form-control"
+                  value={form.bairroInput}
+                  onChange={set('bairroInput')}
+                  onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addBairro())}
+                  placeholder={
+                    selectedCityName
+                      ? `Ex: Outro bairro ou comunidade de ${selectedCityName}...`
+                      : "Digite o nome de um bairro e pressione Enter"
+                  }
+                  style={{ fontSize: '0.85rem' }}
+                />
+                <button
+                  type="button"
+                  className="btn btn-outline"
+                  onClick={addBairro}
+                  style={{ borderRadius: 'var(--border-radius-sm)', padding: '0 1.1rem', whiteSpace: 'nowrap' }}
+                >
+                  Adicionar
+                </button>
+              </div>
+            </div>
+
+            {/* Lista dos bairros selecionados / adicionados */}
+            <div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.35rem' }}>
+                <span style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--color-primary)' }}>
+                  Bairros Selecionados ({form.bairros_atendidos.length})
+                </span>
+                {form.bairros_atendidos.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={clearAllBairros}
+                    style={{
+                      border: 'none',
+                      background: 'none',
+                      color: 'var(--color-error)',
+                      fontSize: '0.72rem',
+                      cursor: 'pointer',
+                      textDecoration: 'underline',
+                      padding: 0
+                    }}
+                  >
+                    Limpar todos
+                  </button>
+                )}
+              </div>
+
+              <div style={{ 
+                display: 'flex', 
+                gap: '0.4rem', 
+                flexWrap: 'wrap', 
+                minHeight: '40px', 
+                padding: '0.5rem', 
+                border: '1px solid rgba(10,37,64,0.12)', 
+                borderRadius: '6px', 
+                backgroundColor: '#fcfcfd' 
+              }}>
+                {form.bairros_atendidos.length === 0 ? (
+                  <span style={{ fontSize: '0.8rem', color: 'var(--color-text-light)', fontStyle: 'italic', display: 'flex', alignItems: 'center' }}>
+                    Nenhum bairro adicionado ainda. Selecione na lista acima ou digite manualmente.
+                  </span>
+                ) : (
+                  form.bairros_atendidos.map((b) => (
+                    <span
+                      key={b}
+                      style={{ 
+                        display: 'inline-flex', 
+                        alignItems: 'center', 
+                        gap: '0.4rem', 
+                        fontSize: '0.75rem', 
+                        padding: '0.25rem 0.55rem', 
+                        borderRadius: '4px', 
+                        backgroundColor: 'rgba(10,37,64,0.06)', 
+                        color: 'var(--color-primary)', 
+                        border: '1px solid rgba(10,37,64,0.15)',
+                        fontWeight: 500
+                      }}
+                    >
+                      {b}
+                      <button
+                        type="button"
+                        onClick={() => removeBairro(b)}
+                        title={`Remover ${b}`}
+                        style={{ 
+                          border: 'none', 
+                          background: 'none', 
+                          padding: 0, 
+                          cursor: 'pointer', 
+                          display: 'inline-flex', 
+                          color: 'var(--color-error)',
+                          fontWeight: 700,
+                          fontSize: '0.85rem',
+                          lineHeight: 1
+                        }}
+                      >
+                        &times;
+                      </button>
+                    </span>
+                  ))
+                )}
+              </div>
             </div>
           </div>
 

@@ -1,3 +1,4 @@
+
 // Dados iniciais e constantes compartilhadas
 
 export const CITIES = ['Pirapora', 'Buritizeiro', 'Jequitaí'];
@@ -8,6 +9,69 @@ export const INTEREST_EMOJIS: Record<string, string> = {
   Administrativo: '📋', Comércio: '🛒', Tecnologia: '💻',
   Logística: '🚛', Saúde: '🏥', Outros: '➕',
 };
+
+export const BAIRROS_POR_CIDADE: Record<string, string[]> = {
+  pirapora: [
+    'Bom Jesus',
+    'Centro',
+    'Cidade Jardim',
+    'Cinquentenário',
+    'Cícero Passos',
+    'Industrial',
+    'Jardim Primavera',
+    'Morada do Sol',
+    'Nossa Senhora Aparecida',
+    'Nossa Senhora de Fátima',
+    'Nova Pirapora',
+    'Primavera',
+    'Sagrada Família',
+    'Santa Mariana',
+    'Santa Terezinha',
+    'Santo Antônio',
+    'Santos Dumont',
+    'São Geraldo',
+    'São João',
+    'Shekinah',
+    'Área Rural'
+  ],
+  buritizeiro: [
+    'Alvorada',
+    'Bandeirantes',
+    'Centro',
+    'Cruzeiro',
+    'Guimarães',
+    'Industrial',
+    'Jardim das Palmeiras',
+    'Jardim dos Buritis',
+    'Minas Novas',
+    'Morada do Sol',
+    'Novo Horizonte',
+    'Planalto',
+    'Santa Terezinha',
+    'São Francisco',
+    'São Geraldo',
+    'Área Rural'
+  ],
+  jequitai: [
+    'Boa Esperança',
+    'Centro',
+    'Novo Horizonte',
+    'Santa Rita',
+    'São Geraldo',
+    'Vila Nova',
+    'Área Rural'
+  ]
+};
+
+export function getBairrosDaCidade(nomeCidade: string): string[] {
+  if (!nomeCidade) return [];
+  const normalized = nomeCidade
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .trim();
+  return BAIRROS_POR_CIDADE[normalized] || [];
+}
 
 export function isFormDirty(
   current: Record<string, unknown>,
