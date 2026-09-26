@@ -11,7 +11,7 @@ const TOTAL_STEPS = 5;
 const STEP_LABELS = ['Dados Pessoais', 'Dados Familiares', 'Vulnerabilidade', 'Interesses', 'Revisão'];
 
 const EMPTY_FORM = {
-  name: '', cpf: '', sex: '', color: '', education: '', schoolShift: '', dob: '',
+  name: '', email: '', password: '', cpf: '', sex: '', color: '', education: '', schoolShift: '', dob: '',
   cep: '', address: '', number: '', neighborhood: '', city: '',
   phone: '', whatsapp: '', parentName: '', parentRelation: '', parentPhone: '',
   householdSize: '', householdWorkers: '',
@@ -244,6 +244,8 @@ export default function YouthTab() {
 
     const initialData: FormState = {
       name: y.nome_completo,
+      email: '',
+      password: '',
       cpf: y.cpf ? formatCPF(y.cpf) : '',
       sex: y.sexo || '',
       color: y.cor_pele || '',
@@ -335,6 +337,21 @@ export default function YouthTab() {
 
     if (currentStep === 1) {
       if (!form.name.trim()) newErrors.name = 'Nome completo é obrigatório';
+
+      if (editIdx === -1) {
+        if (!form.email.trim()) {
+          newErrors.email = 'E-mail de acesso é obrigatório';
+        } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) {
+          newErrors.email = 'Formato de e-mail inválido';
+        }
+
+        if (!form.password) {
+          newErrors.password = 'Senha de acesso é obrigatória';
+        } else if (form.password.length < 6) {
+          newErrors.password = 'A senha deve ter pelo menos 6 caracteres';
+        }
+      }
+
       if (!form.sex) newErrors.sex = 'Sexo é obrigatório';
       if (!form.color) newErrors.color = 'Cor/Raça é obrigatória';
       if (!form.education) newErrors.education = 'Escolaridade é obrigatória';
@@ -511,11 +528,25 @@ export default function YouthTab() {
       };
 
       if (isNew) {
-        const { error } = await supabase.from('jovens').insert(dbEntry);
-        if (error) throw error;
-        
-        setShowPinResult(pinGerado); // Salva para exibir no modal de sucesso
-        await dialog.alert('Jovem Cadastrado', `Jovem <b>${form.name}</b> foi cadastrado com sucesso. Anote o PIN de acesso: <b>${pinGerado}</b>`, 'success');
+        const response = await fetch('/api/criar-jovem', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: form.email,
+            senha: form.password,
+            dbEntry
+          })
+        });
+
+        const json = await response.json();
+        if (!response.ok) throw new Error(json.error || 'Erro na requisição');
+
+        setShowPinResult(pinGerado);
+        await dialog.alert(
+          'Jovem Cadastrado',
+          `Jovem <b>${form.name}</b> foi cadastrado com sucesso!<br/><br/>Credenciais de acesso ao Portal do Jovem:<br/>• <b>E-mail:</b> ${form.email}<br/>• <b>Senha:</b> ${form.password}`,
+          'success'
+        );
       } else {
         const youthToEdit = youths[editIdx];
         const { error } = await supabase
@@ -687,6 +718,37 @@ export default function YouthTab() {
                   <input className="form-control" value={form.name} onChange={set('name')} placeholder="Nome completo do jovem" required />
                   {errors.name && <span className="error-text" style={{ color: 'var(--color-error)', fontSize: '0.75rem', marginTop: '0.25rem', display: 'block' }}>{errors.name}</span>}
                 </div>
+
+                {/* Credenciais de Acesso ao Portal (Apenas na criação) */}
+                {editIdx === -1 && (
+                  <>
+                    <div className="form-group">
+                      <label className="form-label">E-mail de Login do Jovem</label>
+                      <input
+                        className="form-control"
+                        type="email"
+                        value={form.email}
+                        onChange={set('email')}
+                        placeholder="jovem@email.com"
+                        required
+                      />
+                      {errors.email && <span className="error-text" style={{ color: 'var(--color-error)', fontSize: '0.75rem', marginTop: '0.25rem', display: 'block' }}>{errors.email}</span>}
+                    </div>
+                    <div className="form-group">
+                      <label className="form-label">Senha de Acesso ao Portal</label>
+                      <input
+                        className="form-control"
+                        type="password"
+                        value={form.password}
+                        onChange={set('password')}
+                        placeholder="Mínimo 6 caracteres"
+                        required
+                      />
+                      {errors.password && <span className="error-text" style={{ color: 'var(--color-error)', fontSize: '0.75rem', marginTop: '0.25rem', display: 'block' }}>{errors.password}</span>}
+                    </div>
+                  </>
+                )}
+
                 <div className="form-group">
                   <label className="form-label">Sexo</label>
                   <select className="form-control" value={form.sex} onChange={set('sex')} required>
@@ -869,6 +931,9 @@ export default function YouthTab() {
                 <div className="summary-section-title">Dados Pessoais</div>
                 <div className="summary-grid">
                   <div className="summary-item"><span className="summary-label">Nome</span><span className="summary-value">{form.name || '—'}</span></div>
+                  {editIdx === -1 && (
+                    <div className="summary-item"><span className="summary-label">E-mail de Acesso</span><span className="summary-value">{form.email || '—'}</span></div>
+                  )}
                   <div className="summary-item"><span className="summary-label">CPF</span><span className="summary-value">{form.cpf || '—'}</span></div>
                   <div className="summary-item"><span className="summary-label">Nascimento</span><span className="summary-value">{form.dob ? `${formatDateBR(form.dob)} (${calcAge(form.dob)} anos)` : '—'}</span></div>
                   <div className="summary-item"><span className="summary-label">Cidade Pólo</span><span className="summary-value">{form.city || '—'}</span></div>
