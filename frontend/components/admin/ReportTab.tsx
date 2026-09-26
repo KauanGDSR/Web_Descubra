@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, Fragment } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
 import { useDialog } from '@/frontend/components/ui/CustomDialog';
 
@@ -19,6 +20,10 @@ interface Acompanhamento {
 
 export default function ReportTab() {
   const dialog = useDialog();
+  const searchParams = useSearchParams();
+  const queryJovemId = searchParams?.get('jovemId') || searchParams?.get('jovem_id') || '';
+  const queryNome = searchParams?.get('nome') || '';
+
   const [supabase] = useState(() => createClient());
   const [activeTab, setActiveTab] = useState<'normal' | 'ia'>('normal');
   const isMounted = useRef(true);
@@ -29,7 +34,8 @@ export default function ReportTab() {
   const [loading, setLoading] = useState(true);
 
   // Normal Report States
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState(queryNome);
+  const [filterJovemId, setFilterJovemId] = useState<string | null>(queryJovemId || null);
   const [filterCidade, setFilterCidade] = useState('');
   const [filterRisco, setFilterRisco] = useState('');
   const [filterDateFrom, setFilterDateFrom] = useState('');
@@ -161,6 +167,22 @@ export default function ReportTab() {
     };
   }, []);
 
+  // Sincroniza jovem vindo por parâmetro de URL (Fila Inteligente)
+  useEffect(() => {
+    if (queryJovemId) {
+      setFilterJovemId(queryJovemId);
+      setSelectedYouth(queryJovemId);
+      if (queryNome && !searchTerm) {
+        setSearchTerm(queryNome);
+      } else if (youthsList.length > 0) {
+        const found = youthsList.find((y) => y.id === queryJovemId);
+        if (found) {
+          setSearchTerm(found.nome);
+        }
+      }
+    }
+  }, [queryJovemId, queryNome, youthsList]);
+
   const getRiscoStatus = (ac: Acompanhamento): 'Bom' | 'Alerta' | 'Perigo' => {
     let badCount = 0;
     if (ac.assiduidade === 'Faltou') badCount += 2;
@@ -179,7 +201,10 @@ export default function ReportTab() {
 
   // Filter logic
   const filteredAcompanhamentos = acompanhamentos.filter((ac) => {
-    const matchesSearch = ac.jovemNome.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesJovem = filterJovemId
+      ? (ac.jovem_id === filterJovemId || (searchTerm !== '' && ac.jovemNome.toLowerCase().includes(searchTerm.toLowerCase())))
+      : (searchTerm === '' || ac.jovemNome.toLowerCase().includes(searchTerm.toLowerCase()));
+
     const matchesCidade = filterCidade === '' || ac.cidade === filterCidade;
 
     const risco = getRiscoStatus(ac);
@@ -191,7 +216,7 @@ export default function ReportTab() {
     const matchesDateFrom = filterDateFrom === '' || ac.dataRegistro >= filterDateFrom;
     const matchesDateTo = filterDateTo === '' || ac.dataRegistro <= filterDateTo;
 
-    return matchesSearch && matchesCidade && matchesRisco && matchesDateFrom && matchesDateTo;
+    return matchesJovem && matchesCidade && matchesRisco && matchesDateFrom && matchesDateTo;
   });
 
   const totalPoints = filteredAcompanhamentos.reduce((acc, curr) => acc + curr.pontos, 0);
@@ -868,6 +893,45 @@ export default function ReportTab() {
               </div>
             </div>
 
+            {/* Banner de filtro ativo vindo da Fila Inteligente */}
+            {filterJovemId && (
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.6rem',
+                backgroundColor: 'rgba(13, 92, 58, 0.08)',
+                border: '1px solid rgba(13, 92, 58, 0.2)',
+                borderRadius: '6px',
+                padding: '0.55rem 0.95rem',
+                fontSize: '0.85rem',
+                color: 'var(--color-secondary)',
+                fontWeight: 600,
+                marginBottom: '0.5rem'
+              }}>
+                <span>📍 Exibindo histórico de acompanhamentos de: <b>{searchTerm || 'Jovem Selecionado'}</b></span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setFilterJovemId(null);
+                    setSearchTerm('');
+                    setSelectedYouth('');
+                  }}
+                  style={{
+                    border: 'none',
+                    background: 'none',
+                    color: 'var(--color-error)',
+                    fontSize: '0.78rem',
+                    cursor: 'pointer',
+                    textDecoration: 'underline',
+                    marginLeft: 'auto',
+                    fontWeight: 600
+                  }}
+                >
+                  Limpar filtro e ver todos
+                </button>
+              </div>
+            )}
+
             {/* Filters */}
             <div className="filter-row">
               <div className="filter-item">
@@ -947,7 +1011,9 @@ export default function ReportTab() {
                   {filteredAcompanhamentos.length === 0 ? (
                     <tr>
                       <td colSpan={7} style={{ textAlign: 'center', padding: '3rem', color: 'var(--color-text-light)' }}>
-                        Nenhum registro encontrado correspondente aos filtros.
+                        {filterJovemId
+                          ? `Nenhum registro de acompanhamento encontrado para ${searchTerm || 'este jovem'}.`
+                          : 'Nenhum registro encontrado correspondente aos filtros.'}
                       </td>
                     </tr>
                   ) : (
@@ -1209,7 +1275,7 @@ export default function ReportTab() {
                 {/* Result Header Actions */}
                 <div className="print-btn-action" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #e2e8f0', paddingBottom: '1rem', marginBottom: '1.5rem' }}>
                   <span style={{ fontSize: '0.78rem', textTransform: 'uppercase', fontWeight: 700, color: 'var(--color-secondary)', letterSpacing: '0.05em' }}>
-                    ◆ Relatório de IA Concluído • Modelo: Gemini-2.5-Flash
+                    ◆ Relatório de IA Concluído
                   </span>
                   <button
                     className="btn btn-outline"
@@ -1264,7 +1330,7 @@ export default function ReportTab() {
 
                     {/* Relatos do Técnico Telegram */}
                     <div className="report-section-box" style={{ borderLeftColor: 'var(--color-orange)' }}>
-                      <h4 className="report-section-title">Histórico de Relatos do Técnico (3 Mais Relevantes via Telegram)</h4>
+                      <h4 className="report-section-title">Histórico de Relatos do Técnico (3 Mais Relevantes)</h4>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginTop: '0.75rem' }}>
                         {(() => {
                           const youthAcs = acompanhamentos.filter(ac => ac.jovem_id === selectedYouth);

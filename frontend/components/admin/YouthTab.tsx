@@ -117,7 +117,7 @@ const VULNERABILITY_QUESTIONS: [keyof FormState, string][] = [
   ['disability', 'Possui deficiência?'],
   ['internet', 'Possui acesso à internet?'],
   ['computer', 'Possui computador?'],
-  ['prevWork', 'Já trabalhou anteriormente?'],
+  ['prevWork', 'Já trabalhou anteriormente?(ou está trabalhando)'],
   ['schoolDrop', 'Já abandonou a escola?'],
   ['transportDiff', 'Dificuldades de transporte?'],
   ['psychHelp', 'Em acompanhamento psicológico?'],

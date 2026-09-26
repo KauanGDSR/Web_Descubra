@@ -116,7 +116,7 @@ export async function matchVagaComJovens(
     2. ESCOLARIDADE: Nível minimamente coerente.
     3. INCLUSÃO PRODUTIVA (MUITO FORTE): Em igualdade de condições, PRIORIZE jovens com maior vulnerabilidade.
 
-    Retorne os Top 3 candidatos sugeridos.
+    Retorne até 3 candidatos recomendados. Para cada um, seja conciso e direto na justificativa e no plano de preparação (máximo 2 frases cada).
   `;
 
   const { object: matchingResult, usage } = await generateObject({
@@ -127,14 +127,20 @@ export async function matchVagaComJovens(
           z.object({
             jovem_id: z.string().describe('ID do jovem recomendado'),
             compatibilidade: z.number().min(0).max(100).describe('Porcentagem de matching'),
-            justificativa: z.string().describe('Explicação detalhada'),
+            justificativa: z.string().describe('Explicação resumida'),
             plano_preparacao: z.string().describe('Conselho curto ao técnico'),
           })
         )
-        .min(1)
         .max(3),
     }),
     prompt,
+    providerOptions: {
+      google: {
+        thinkingConfig: {
+          thinkingBudget: 512,
+        },
+      },
+    },
   });
 
   console.log(
@@ -239,7 +245,11 @@ export async function matchJovemComVagas(
     2. IDADE MÍNIMA: O jovem deve ter a idade mínima exigida.
     3. PERFIL: A escolaridade e o perfil da vaga devem casar com o nível do jovem.
 
-    Retorne as Top 3 vagas sugeridas para este jovem. Para cada uma, forneça a compatibilidade em porcentagem (0 a 100), uma justificativa humana baseada nos critérios acima e um conselho ao jovem.
+    Retorne até as Top 3 vagas sugeridas para este jovem. Para cada uma:
+    - vaga_id: ID exato da vaga
+    - compatibilidade: número de 0 a 100
+    - justificativa: texto curto e direto (máximo 2 frases) explicando a compatibilidade ou pontos de atenção (ex: se ainda não tiver idade mínima)
+    - conselho: conselho prático e motivador ao jovem (máximo 2 frases).
   `;
 
   const { object: matchingResult, usage } = await generateObject({
@@ -250,14 +260,20 @@ export async function matchJovemComVagas(
           z.object({
             vaga_id: z.string().describe('ID da vaga recomendada'),
             compatibilidade: z.number().min(0).max(100).describe('Porcentagem de matching'),
-            justificativa: z.string().describe('Explicação detalhada'),
+            justificativa: z.string().describe('Explicação resumida'),
             conselho: z.string().describe('Conselho ao jovem'),
           })
         )
-        .min(1)
         .max(3),
     }),
     prompt,
+    providerOptions: {
+      google: {
+        thinkingConfig: {
+          thinkingBudget: 512,
+        },
+      },
+    },
   });
 
   console.log(

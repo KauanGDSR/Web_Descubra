@@ -592,7 +592,7 @@ export default function FilaInteligentePage() {
 
                   <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
                     <button
-                      onClick={() => router.push(`/admin/relatorios?jovemId=${jovemSelecionado.id}`)}
+                      onClick={() => router.push(`/admin/relatorios?jovemId=${jovemSelecionado.id}&nome=${encodeURIComponent(jovemSelecionado.nome_completo || jovemSelecionado.nome)}`)}
                       className="btn"
                       style={{
                         flex: 1,

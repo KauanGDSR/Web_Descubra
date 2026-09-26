@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import type { Metadata } from 'next';
 import ReportTab from '@/frontend/components/admin/ReportTab';
 
@@ -7,5 +8,9 @@ export const metadata: Metadata = {
 };
 
 export default function RelatoriosPage() {
-  return <ReportTab />;
+  return (
+    <Suspense fallback={<div style={{ padding: '2rem', textAlign: 'center', color: 'var(--color-text-light)' }}>Carregando relatórios...</div>}>
+      <ReportTab />
+    </Suspense>
+  );
 }
