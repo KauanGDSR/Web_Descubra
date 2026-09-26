@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
-import { LayoutDashboard, UserCircle, Briefcase, GraduationCap, BarChart, Calendar, FileText, HelpCircle, LogOut } from 'lucide-react';
+import { LayoutDashboard, UserCircle, Briefcase, GraduationCap, BarChart, Calendar, FileText, HelpCircle, LogOut, Gift } from 'lucide-react';
 import LogoutButton from '@/frontend/components/ui/LogoutButton';
 
 const TABS = [
@@ -12,6 +12,7 @@ const TABS = [
   { href: '/jovem/vagas', label: 'Mural de Vagas', icon: <Briefcase size={20} /> },
   { href: '/jovem/cursos', label: 'Cursos e Capacitação', icon: <GraduationCap size={20} /> },
   { href: '/jovem/acompanhamento', label: 'Meu Progresso', icon: <BarChart size={20} /> },
+  { href: '/jovem/premios', label: 'Loja de Prêmios', icon: <Gift size={20} /> },
   { href: '/jovem/agenda', label: 'Agenda', icon: <Calendar size={20} /> },
   { href: '/jovem/documentos', label: 'Documentos', icon: <FileText size={20} /> },
   { href: '/jovem/ajuda', label: 'Ajuda e Suporte', icon: <HelpCircle size={20} /> },
@@ -31,7 +32,7 @@ export default function JovemSidebar() {
       {/* Botão Hambúrguer Mobile Flutuante */}
       <button
         type="button"
-        className="mobile-hamburger-trigger"
+        className="mobile-hamburger-trigger no-print"
         onClick={() => setIsMobileOpen(true)}
         aria-label="Abrir Menu de Navegação"
         title="Menu"
@@ -44,7 +45,7 @@ export default function JovemSidebar() {
       {/* Backdrop escuro no mobile */}
       {isMobileOpen && (
         <div
-          className="sidebar-mobile-backdrop"
+          className="sidebar-mobile-backdrop no-print"
           onClick={() => setIsMobileOpen(false)}
           aria-hidden="true"
         />

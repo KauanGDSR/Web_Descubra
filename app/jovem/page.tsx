@@ -15,7 +15,8 @@ import {
   CheckCircle2, 
   AlertCircle,
   FileText,
-  UserCheck
+  UserCheck,
+  Gift
 } from 'lucide-react';
 import Link from 'next/link';
 import { useJovemDashboard } from '@/frontend/hooks/useJovemDashboard';
@@ -85,13 +86,15 @@ export default function JovemDashboard() {
           <p style={cardSubtitleStyle}>Acompanhamentos Registrados</p>
         </motion.div>
 
-        <motion.div whileHover={{ scale: 1.02 }} style={cardStyle}>
-          <div style={{ ...iconWrapperStyle, backgroundColor: '#ffedd5', color: '#ea580c' }}>
-            <Target size={24} />
-          </div>
-          <h3 style={cardTitleStyle}>{jovem?.pontuacao_atual ?? 0} pts</h3>
-          <p style={cardSubtitleStyle}>Índice de Vulnerabilidade Social</p>
-        </motion.div>
+        <Link href="/jovem/premios" style={{ textDecoration: 'none' }}>
+          <motion.div whileHover={{ scale: 1.02 }} style={{ ...cardStyle, cursor: 'pointer', border: '1.5px solid rgba(245, 158, 11, 0.3)' }}>
+            <div style={{ ...iconWrapperStyle, backgroundColor: '#ffedd5', color: '#ea580c' }}>
+              <Gift size={24} />
+            </div>
+            <h3 style={cardTitleStyle}>{jovem?.pontuacao_atual ?? 0} pts</h3>
+            <p style={{ ...cardSubtitleStyle, color: '#ea580c', fontWeight: 600 }}>Loja de Prêmios &rarr;</p>
+          </motion.div>
+        </Link>
 
         <motion.div whileHover={{ scale: 1.02 }} style={cardStyle}>
           <div style={{ ...iconWrapperStyle, backgroundColor: '#f3e8ff', color: '#7e22ce' }}>
