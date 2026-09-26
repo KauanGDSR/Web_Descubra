@@ -10,7 +10,7 @@ import { CompanyCard } from './CompanyCard';
 
 import type { DbCompany, City } from '@/backend/types';
 
-const formatCnpj = (value: string) => {
+export const formatCnpj = (value: string) => {
   const clean = value.replace(/\D/g, '').slice(0, 14);
   if (clean.length <= 2) return clean;
   if (clean.length <= 5) return `${clean.slice(0, 2)}.${clean.slice(2)}`;
@@ -19,13 +19,13 @@ const formatCnpj = (value: string) => {
   return `${clean.slice(0, 2)}.${clean.slice(2, 5)}.${clean.slice(5, 8)}/${clean.slice(8, 12)}-${clean.slice(12, 14)}`;
 };
 
-const formatCep = (value: string) => {
+export const formatCep = (value: string) => {
   const clean = value.replace(/\D/g, '').slice(0, 8);
   if (clean.length <= 5) return clean;
   return `${clean.slice(0, 5)}-${clean.slice(5, 8)}`;
 };
 
-const formatPhone = (value: string) => {
+export const formatPhone = (value: string) => {
   const clean = value.replace(/\D/g, '').slice(0, 11);
   if (clean.length <= 2) return clean;
   if (clean.length <= 6) return `(${clean.slice(0, 2)}) ${clean.slice(2)}`;
@@ -186,15 +186,19 @@ export default function CompanyTab() {
     setSubmitting(true);
 
     try {
+      const cleanCnpj = cnpj ? cnpj.replace(/\D/g, '') : null;
+      const cleanCep = form.cep ? form.cep.replace(/\D/g, '') : null;
+      const cleanPhone = form.phone ? form.phone.replace(/\D/g, '') : null;
+
       if (editIdx >= 0) {
         const dbEntry = {
           razao_social: form.razao,
           nome_fantasia: form.fantasia || form.razao,
-          cnpj: cnpj || null,
-          cep: form.cep || null,
+          cnpj: cleanCnpj,
+          cep: cleanCep,
           endereco: form.endereco || null,
           email: form.email || null,
-          telefone: form.phone || null,
+          telefone: cleanPhone,
           responsavel_nome: form.owner || null,
           cidade_id: form.cityId || null,
           selo: form.selo || 'Nenhum'
@@ -220,11 +224,11 @@ export default function CompanyTab() {
           body: JSON.stringify({
             razao_social: form.razao,
             nome_fantasia: form.fantasia || form.razao,
-            cnpj: cnpj || null,
-            cep: form.cep || null,
+            cnpj: cleanCnpj,
+            cep: cleanCep,
             endereco: form.endereco || null,
             email: form.email || null,
-            telefone: form.phone || null,
+            telefone: cleanPhone,
             responsavel_nome: form.owner || null,
             cidade_id: form.cityId || null,
             senha: form.password,

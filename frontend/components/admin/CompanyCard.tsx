@@ -3,6 +3,7 @@
 import React from 'react';
 import CardEditBtn from '@/frontend/components/ui/CardEditBtn';
 import type { DbCompany } from '@/backend/types';
+import { formatCnpj, formatCep, formatPhone } from './CompanyTab';
 
 interface CompanyCardProps {
   company: DbCompany;
@@ -19,7 +20,7 @@ export function CompanyCard({ company: c, onEdit, onUpdateSelo }: CompanyCardPro
         <div className="company-card-title-group">
           <span className="company-card-name">{c.razao_social}</span>
           <span className="company-card-cnpj-city">
-            CNPJ: {c.cnpj || '—'} • {c.cidades?.nome || 'Pólo Não Associado'}
+            CNPJ: {c.cnpj ? formatCnpj(c.cnpj) : '—'} • {c.cidades?.nome || 'Pólo Não Associado'}
           </span>
         </div>
       </div>
@@ -52,7 +53,7 @@ export function CompanyCard({ company: c, onEdit, onUpdateSelo }: CompanyCardPro
       <div className="company-card-details">
         <div className="company-card-detail-item">
           <span className="company-card-detail-label">CEP</span>
-          <span className="company-card-detail-value">{c.cep || '—'}</span>
+          <span className="company-card-detail-value">{c.cep ? formatCep(c.cep) : '—'}</span>
         </div>
         <div className="company-card-detail-item">
           <span className="company-card-detail-label">Endereço</span>
@@ -70,7 +71,7 @@ export function CompanyCard({ company: c, onEdit, onUpdateSelo }: CompanyCardPro
         </div>
         <div className="company-card-detail-item">
           <span className="company-card-detail-label">Telefone</span>
-          <span className="company-card-detail-value">{c.telefone || '—'}</span>
+          <span className="company-card-detail-value">{c.telefone ? formatPhone(c.telefone) : '—'}</span>
         </div>
         <div className="company-card-detail-item">
           <span className="company-card-detail-label">Selo</span>

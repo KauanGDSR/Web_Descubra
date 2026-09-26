@@ -5,14 +5,29 @@ export const uuidSchema = z.string().uuid('Identificador inválido (esperado UUI
 export const criarEmpresaSchema = z.object({
   razao_social: z.string().min(3, 'Razão social deve ter no mínimo 3 caracteres').max(200),
   nome_fantasia: z.string().max(200).optional().nullable(),
-  email: z.string().email('E-mail corporativo inválido'),
-  cnpj: z.string().regex(/^\d{14}$/, 'CNPJ deve ter 14 dígitos numéricos'),
+  email: z.preprocess(
+    (v) => (typeof v === 'string' ? v.trim().toLowerCase() : v),
+    z.string().email('E-mail corporativo inválido')
+  ),
+  cnpj: z.preprocess(
+    (v) => (typeof v === 'string' ? v.replace(/\D/g, '') : v),
+    z.string().regex(/^\d{14}$/, 'CNPJ deve ter 14 dígitos numéricos')
+  ),
   senha: z.string().min(8, 'A senha deve ter pelo menos 8 caracteres (requisito de segurança OWASP)'),
   responsavel_nome: z.string().min(3, 'Nome do responsável deve ter no mínimo 3 caracteres').max(150),
-  telefone: z.string().regex(/^\d{10,11}$/, 'Telefone deve ter 10 ou 11 dígitos numéricos').optional().nullable(),
-  cep: z.string().regex(/^\d{8}$/, 'CEP deve ter 8 dígitos numéricos').optional().nullable(),
+  telefone: z.preprocess(
+    (v) => (typeof v === 'string' ? (v.replace(/\D/g, '') || null) : v),
+    z.string().regex(/^\d{10,11}$/, 'Telefone deve ter 10 ou 11 dígitos numéricos').optional().nullable()
+  ),
+  cep: z.preprocess(
+    (v) => (typeof v === 'string' ? (v.replace(/\D/g, '') || null) : v),
+    z.string().regex(/^\d{8}$/, 'CEP deve ter 8 dígitos numéricos').optional().nullable()
+  ),
   endereco: z.string().max(300).optional().nullable(),
-  cidade_id: z.string().uuid('Cidade inválida').optional().nullable(),
+  cidade_id: z.preprocess(
+    (v) => (v === '' ? null : v),
+    z.string().uuid('Cidade inválida').optional().nullable()
+  ),
   selo: z.enum(['Ouro', 'Prata', 'Bronze', 'Nenhum']).optional().default('Nenhum'),
 });
 
