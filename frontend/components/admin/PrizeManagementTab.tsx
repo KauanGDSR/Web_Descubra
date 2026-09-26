@@ -517,7 +517,20 @@ export default function PrizeManagementTab() {
                           </span>
                         </td>
                         <td>
-                          <span className="points-pill" style={{ fontSize: '0.7rem' }}>
+                          <span
+                            style={{
+                              fontSize: '0.78rem',
+                              fontWeight: 800,
+                              backgroundColor: '#0a2540',
+                              color: '#ffffff',
+                              padding: '0.25rem 0.55rem',
+                              borderRadius: '6px',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '0.25rem'
+                            }}
+                          >
+                            <Sparkles size={11} style={{ color: '#fbbf24' }} />
                             {r.premioCusto} pts
                           </span>
                         </td>
@@ -686,16 +699,22 @@ export default function PrizeManagementTab() {
                       </div>
 
                       <span
-                        className="points-pill"
                         style={{
-                          fontSize: '0.75rem',
+                          fontSize: '0.82rem',
                           fontWeight: 800,
-                          backgroundColor: 'rgba(249, 115, 22, 0.1)',
-                          color: 'var(--color-orange)',
-                          padding: '0.25rem 0.55rem',
-                          borderRadius: '6px'
+                          backgroundColor: '#0a2540',
+                          color: '#ffffff',
+                          padding: '0.35rem 0.75rem',
+                          borderRadius: '8px',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '0.3rem',
+                          boxShadow: '0 2px 6px rgba(10, 37, 64, 0.18)',
+                          letterSpacing: '0.02em',
+                          flexShrink: 0
                         }}
                       >
+                        <Sparkles size={13} style={{ color: '#fbbf24' }} />
                         {p.custo_pontos} pts
                       </span>
                     </div>
@@ -723,7 +742,7 @@ export default function PrizeManagementTab() {
                       title="Clique para alternar visibilidade no portal do aluno"
                     >
                       {p.ativo ? <Eye size={15} /> : <EyeOff size={15} />}
-                      {p.ativo ? 'Disponível no Portal' : 'Oculto / Inativo'}
+                      {p.ativo ? 'Disponível no Portal do Aluno' : 'Oculto / Inativo'}
                     </button>
 
                     <div style={{ display: 'flex', gap: '0.4rem' }}>

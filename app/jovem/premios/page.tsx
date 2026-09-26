@@ -344,13 +344,20 @@ export default function JovemPremiosPage() {
                       </div>
 
                       <span style={{
-                        backgroundColor: temPontos ? 'rgba(22, 163, 74, 0.1)' : 'rgba(245, 158, 11, 0.1)',
-                        color: temPontos ? '#16a34a' : '#d97706',
-                        fontSize: '0.85rem',
+                        backgroundColor: '#0a2540',
+                        color: '#ffffff',
+                        fontSize: '0.82rem',
                         fontWeight: 800,
-                        padding: '0.3rem 0.65rem',
-                        borderRadius: '6px'
+                        padding: '0.35rem 0.75rem',
+                        borderRadius: '8px',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '0.3rem',
+                        boxShadow: '0 2px 6px rgba(10, 37, 64, 0.18)',
+                        letterSpacing: '0.02em',
+                        flexShrink: 0
                       }}>
+                        <Sparkles size={13} style={{ color: '#fbbf24' }} />
                         {p.custo_pontos} pts
                       </span>
                     </div>
