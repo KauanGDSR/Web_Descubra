@@ -3,29 +3,43 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
-import { LayoutDashboard, UserCircle, Briefcase, GraduationCap, BarChart, Calendar, FileText, HelpCircle, LogOut, Gift } from 'lucide-react';
+import { 
+  Briefcase, 
+  GraduationCap, 
+  BarChart, 
+  Gift, 
+  Calendar, 
+  FileText, 
+  Settings, 
+  LogOut 
+} from 'lucide-react';
 import LogoutButton from '@/frontend/components/ui/LogoutButton';
 
 const TABS = [
-  { href: '/jovem', label: 'Visão Geral', icon: <LayoutDashboard size={20} /> },
-  { href: '/jovem/perfil', label: 'Meu Perfil', icon: <UserCircle size={20} /> },
   { href: '/jovem/vagas', label: 'Mural de Vagas', icon: <Briefcase size={20} /> },
   { href: '/jovem/cursos', label: 'Cursos e Capacitação', icon: <GraduationCap size={20} /> },
   { href: '/jovem/acompanhamento', label: 'Meu Progresso', icon: <BarChart size={20} /> },
   { href: '/jovem/premios', label: 'Loja de Prêmios', icon: <Gift size={20} /> },
   { href: '/jovem/agenda', label: 'Agenda', icon: <Calendar size={20} /> },
   { href: '/jovem/documentos', label: 'Documentos', icon: <FileText size={20} /> },
-  { href: '/jovem/ajuda', label: 'Ajuda e Suporte', icon: <HelpCircle size={20} /> },
+  { href: '/jovem/configuracoes', label: 'Configurações', icon: <Settings size={20} /> },
 ];
 
 export default function JovemSidebar() {
   const pathname = usePathname();
   const [isExpanded, setIsExpanded] = useState(false);
-
   const [isMobileOpen, setIsMobileOpen] = useState(false);
 
-  const isActive = (href: string) =>
-    href === '/jovem' ? pathname === '/jovem' : pathname.startsWith(href);
+  const isActive = (href: string) => {
+    if (href === '/jovem/configuracoes') {
+      return (
+        pathname.startsWith('/jovem/configuracoes') ||
+        pathname.startsWith('/jovem/perfil') ||
+        pathname.startsWith('/jovem/ajuda')
+      );
+    }
+    return pathname.startsWith(href);
+  };
 
   return (
     <>
@@ -74,13 +88,16 @@ export default function JovemSidebar() {
           </button>
           
           <div className="sidebar-brand">
-            <Link href="/" className="sidebar-logo-text" title="Ir para a Página Inicial">
+            <Link href="/jovem/vagas" className="sidebar-logo-text" title="Ir para o Mural de Vagas">
               Descubra<span>Hub</span>
             </Link>
+            <span className="sidebar-role-badge">
+              Painel do Aluno
+            </span>
           </div>
         </div>
 
-        <nav className="sidebar-nav" aria-label="Navegação do Jovem">
+        <nav className="sidebar-nav-container" aria-label="Navegação do Jovem">
           {TABS.map((tab) => {
             const active = isActive(tab.href);
             return (
@@ -91,13 +108,14 @@ export default function JovemSidebar() {
                 role="tab"
                 aria-selected={active}
                 title={!isExpanded ? tab.label : undefined}
+                onClick={() => setIsMobileOpen(false)}
               >
                 {active && <span className="sidebar-active-indicator" />}
                 <div className="sidebar-item-icon">
                   {tab.icon}
                 </div>
                 <span className="sidebar-item-label">
-                  {tab.label}
+                  <span className="sidebar-item-text">{tab.label}</span>
                 </span>
               </Link>
             );
