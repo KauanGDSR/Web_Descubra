@@ -111,7 +111,6 @@ export default function FilaInteligentePage() {
   const [filtroTurno, setFiltroTurno] = useState('Todos');
   const [filtroBairro, setFiltroBairro] = useState('Todos');
   const [filtroTipoInscricao, setFiltroTipoInscricao] = useState('Todos');
-  const [filtroFaixaScore, setFiltroFaixaScore] = useState('Todos');
 
   const carregarFila = async () => {
     setLoading(true);
@@ -153,6 +152,18 @@ export default function FilaInteligentePage() {
     carregarFila();
   }, []);
 
+  // Normalização de turno para suportar sinônimos e casing
+  const normalizeTurno = (t?: string | null) => {
+    if (!t) return '';
+    const norm = t.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+    if (norm.includes('manh') || norm.includes('matutin')) return 'manha';
+    if (norm.includes('tard') || norm.includes('vespertin')) return 'tarde';
+    if (norm.includes('noit') || norm.includes('noturn')) return 'noite';
+    if (norm.includes('integral')) return 'integral';
+    if (norm.includes('nao') || norm.includes('estuda')) return 'nao estuda';
+    return norm;
+  };
+
   // Filtros aplicados em memória
   const filaFiltrada = useMemo(() => {
     return fila.filter((j) => {
@@ -164,15 +175,14 @@ export default function FilaInteligentePage() {
       const matchesRisco = filtroRisco === 'Todos' || j.classificacao === filtroRisco;
       const matchesEquipamento = filtroEquipamento === 'Todos' || j.equipamento === filtroEquipamento;
       const matchesIdade = filtroIdade === 'Todos' || j.idade?.toString() === filtroIdade;
-      const matchesEscolaridade = filtroEscolaridade === 'Todos' || j.escolaridade?.toLowerCase().includes(filtroEscolaridade.toLowerCase());
-      const matchesTurno = filtroTurno === 'Todos' || j.turno_escolar?.toLowerCase() === filtroTurno.toLowerCase();
+
+      const normEscolaridade = (j.escolaridade || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+      const normFiltroEsc = filtroEscolaridade.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+      const matchesEscolaridade = filtroEscolaridade === 'Todos' || normEscolaridade.includes(normFiltroEsc);
+
+      const matchesTurno = filtroTurno === 'Todos' || normalizeTurno(j.turno_escolar) === normalizeTurno(filtroTurno);
       const matchesBairro = filtroBairro === 'Todos' || j.bairro?.toLowerCase().includes(filtroBairro.toLowerCase());
       const matchesTipoInscricao = filtroTipoInscricao === 'Todos' || j.tipo_inscricao === filtroTipoInscricao;
-
-      let matchesFaixaScore = true;
-      if (filtroFaixaScore === '0-30') matchesFaixaScore = j.score >= 0 && j.score <= 30;
-      else if (filtroFaixaScore === '31-60') matchesFaixaScore = j.score >= 31 && j.score <= 60;
-      else if (filtroFaixaScore === '61-100') matchesFaixaScore = j.score >= 61;
 
       return (
         matchesBusca &&
@@ -182,8 +192,7 @@ export default function FilaInteligentePage() {
         matchesEscolaridade &&
         matchesTurno &&
         matchesBairro &&
-        matchesTipoInscricao &&
-        matchesFaixaScore
+        matchesTipoInscricao
       );
     });
   }, [
@@ -195,19 +204,27 @@ export default function FilaInteligentePage() {
     filtroEscolaridade,
     filtroTurno,
     filtroBairro,
-    filtroTipoInscricao,
-    filtroFaixaScore
+    filtroTipoInscricao
   ]);
 
-  // Estatísticas da Fila
+  // Sincroniza o jovem selecionado com os dados filtrados
+  useEffect(() => {
+    if (filaFiltrada.length === 0) {
+      setJovemSelecionado(null);
+    } else if (!jovemSelecionado || !filaFiltrada.some((j) => j.id === jovemSelecionado.id)) {
+      setJovemSelecionado(filaFiltrada[0]);
+    }
+  }, [filaFiltrada, jovemSelecionado]);
+
+  // Estatísticas da Fila baseadas estritamente no conjunto filtrado
   const stats = useMemo(() => {
-    const total = fila.length;
-    const criticos = fila.filter((j) => j.score >= 60).length;
-    const atencao = fila.filter((j) => j.score >= 30 && j.score < 60).length;
-    const scoreMedio = total > 0 ? Math.round(fila.reduce((acc, curr) => acc + curr.score, 0) / total) : 0;
+    const total = filaFiltrada.length;
+    const criticos = filaFiltrada.filter((j) => j.score >= 60).length;
+    const atencao = filaFiltrada.filter((j) => j.score >= 30 && j.score < 60).length;
+    const scoreMedio = total > 0 ? Math.round(filaFiltrada.reduce((acc, curr) => acc + curr.score, 0) / total) : 0;
 
     return { total, criticos, atencao, scoreMedio };
-  }, [fila]);
+  }, [filaFiltrada]);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', width: '100%', animation: 'fadeIn 0.3s ease-out' }}>
@@ -343,9 +360,11 @@ export default function FilaInteligentePage() {
           <label className="filter-lbl">Turno Escolar</label>
           <select className="filter-input" value={filtroTurno} onChange={(e) => setFiltroTurno(e.target.value)}>
             <option value="Todos">Todos</option>
-            <option value="Matutino">Matutino</option>
-            <option value="Vespertino">Vespertino</option>
-            <option value="Noturno">Noturno</option>
+            <option value="Manhã">Manhã</option>
+            <option value="Tarde">Tarde</option>
+            <option value="Noite">Noite</option>
+            <option value="Integral">Integral</option>
+            <option value="Não estuda">Não estuda</option>
           </select>
         </div>
 
@@ -355,16 +374,6 @@ export default function FilaInteligentePage() {
             <option value="Todos">Todas</option>
             <option value="Demanda Espontânea">Espontânea</option>
             <option value="Encaminhamento">Encaminhamento</option>
-          </select>
-        </div>
-
-        <div className="filter-item">
-          <label className="filter-lbl">Faixa de Score</label>
-          <select className="filter-input" value={filtroFaixaScore} onChange={(e) => setFiltroFaixaScore(e.target.value)}>
-            <option value="Todos">Todos os scores</option>
-            <option value="0-30">0 a 30</option>
-            <option value="31-60">31 a 60</option>
-            <option value="61-100">61 a 100</option>
           </select>
         </div>
       </div>
