@@ -173,9 +173,6 @@ function ConfiguracoesContent() {
 
         if (!error && data) {
           loadedProfile = data as unknown as JovemProfile;
-        } else {
-          window.location.href = '/login';
-          return;
         }
 
         setProfile(loadedProfile);

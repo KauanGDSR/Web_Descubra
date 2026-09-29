@@ -123,19 +123,19 @@ export default function AgendaPage() {
         }
 
         const targetId = session.user.id;
-        const { data: studentData, error: sErr } = await supabase
+        setJovemId(targetId);
+
+        const { data: studentData } = await supabase
           .from('jovens')
           .select('id, nome_completo, nome_social, curso_encaminhado, entidade_formadora, curso_pre_aprendizagem, equipamentos(nome, endereco)')
           .eq('id', targetId)
           .maybeSingle();
 
-        if (sErr || !studentData) {
-          window.location.href = '/login';
-          return;
+        if (studentData) {
+          setJovemNome(studentData.nome_social || studentData.nome_completo);
+        } else {
+          setJovemNome(session.user.user_metadata?.nome || session.user.email?.split('@')[0] || 'Aluno');
         }
-
-        setJovemId(studentData.id);
-        setJovemNome(studentData.nome_social || studentData.nome_completo);
 
         const loadedEvents: AgendaEvent[] = [];
 
