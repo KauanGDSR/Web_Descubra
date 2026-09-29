@@ -23,12 +23,13 @@ export async function GET() {
     const adminSupabase = getAdminClient();
 
     // Valida se o usuário é técnico ou admin
+    const isAdmin = user.email?.toLowerCase().includes('admin') || user.user_metadata?.role === 'admin';
     const { data: tecnico } = await (adminSupabase.from('tecnicos') as any)
       .select('id, cargo, equipamento_id')
       .eq('id', user.id)
       .maybeSingle();
 
-    if (!tecnico) {
+    if (!tecnico && !isAdmin) {
       return NextResponse.json({ error: 'Acesso restrito à equipe técnica e administração.' }, { status: 403 });
     }
 
@@ -51,9 +52,8 @@ export async function GET() {
           nome_social,
           cpf,
           data_nascimento,
-          telefone_contato,
-          telefone_whatsapp,
-          email,
+          telefone,
+          whatsapp,
           pontuacao_atual,
           equipamentos:equipamento_id (
             id,
@@ -89,8 +89,20 @@ export async function GET() {
       return NextResponse.json({ error: 'Falha ao buscar dados de encaminhamentos.' }, { status: 500 });
     }
 
+    // Mapeia telefones para manter compatibilidade com componentes frontend
+    const formatados = (encaminhamentos || []).map((item: any) => ({
+      ...item,
+      jovens: item.jovens
+        ? {
+            ...item.jovens,
+            telefone_contato: item.jovens.telefone || null,
+            telefone_whatsapp: item.jovens.whatsapp || null,
+          }
+        : null,
+    }));
+
     return NextResponse.json({
-      manifestacoes: encaminhamentos || [],
+      manifestacoes: formatados,
     });
   } catch (err: any) {
     console.error('Erro em GET /api/tecnicos/manifestacoes:', err);
@@ -117,13 +129,14 @@ export async function PATCH(request: Request) {
     const adminSupabase = getAdminClient();
 
     // Valida se o usuário é técnico ou admin
+    const isAdmin = user.email?.toLowerCase().includes('admin') || user.user_metadata?.role === 'admin';
     const { data: tecnico } = await (adminSupabase.from('tecnicos') as any)
       .select('id, cargo')
       .eq('id', user.id)
       .maybeSingle();
 
-    if (!tecnico) {
-      return NextResponse.json({ error: 'Acesso restrito à equipe técnica.' }, { status: 403 });
+    if (!tecnico && !isAdmin) {
+      return NextResponse.json({ error: 'Acesso restrito à equipe técnica e administração.' }, { status: 403 });
     }
 
     const body = await request.json();

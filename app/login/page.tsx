@@ -267,7 +267,7 @@ export default function LoginPage() {
                 onClick={handleOpenRecovery}
                 style={{ background: 'none', border: 'none', padding: 0, font: 'inherit', cursor: 'pointer', color: 'var(--color-primary)' }}
               >
-                Esqueci a senha ou e-mail
+                Esqueceu a senha ou o e-mail?
               </button>
             </div>
 
