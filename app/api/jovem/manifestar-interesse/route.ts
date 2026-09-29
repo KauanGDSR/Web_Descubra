@@ -25,9 +25,26 @@ export async function GET() {
     }
 
     const adminSupabase = getAdminClient();
+
+    // Localiza o jovem por ID ou por e-mail de autenticação
+    let { data: jovem } = await (adminSupabase.from('jovens') as any)
+      .select('id')
+      .eq('id', user.id)
+      .maybeSingle();
+
+    if (!jovem && user.email) {
+      const { data: jMail } = await (adminSupabase.from('jovens') as any)
+        .select('id')
+        .eq('email', user.email)
+        .maybeSingle();
+      if (jMail) jovem = jMail;
+    }
+
+    const targetJovemId = jovem ? jovem.id : user.id;
+
     const { data, error } = await (adminSupabase.from('encaminhamentos_vagas') as any)
       .select('id, vaga_id, status, created_at')
-      .eq('jovem_id', user.id);
+      .eq('jovem_id', targetJovemId);
 
     if (error) {
       console.error('Erro ao buscar manifestações do jovem:', error);
@@ -81,29 +98,42 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Vaga não encontrada ou indisponível.' }, { status: 404 });
     }
 
-    // 2. Verifica se o jovem já manifestou interesse nesta mesma vaga
+    // 2. Localiza o cadastro do jovem no banco (por auth.uid ou e-mail)
+    let { data: jovem } = await (adminSupabase.from('jovens') as any)
+      .select('id, equipamento_id, nome_completo, nome_social')
+      .eq('id', user.id)
+      .maybeSingle();
+
+    if (!jovem && user.email) {
+      const { data: jMail } = await (adminSupabase.from('jovens') as any)
+        .select('id, equipamento_id, nome_completo, nome_social')
+        .eq('email', user.email)
+        .maybeSingle();
+      if (jMail) jovem = jMail;
+    }
+
+    if (!jovem) {
+      return NextResponse.json({ error: 'Cadastro do jovem não localizado no banco de dados.' }, { status: 404 });
+    }
+
+    // 3. Verifica se o jovem já manifestou interesse nesta mesma vaga
     const { data: existente } = await (adminSupabase.from('encaminhamentos_vagas') as any)
       .select('id, status')
       .eq('vaga_id', vagaId)
-      .eq('jovem_id', user.id)
+      .eq('jovem_id', jovem.id)
       .maybeSingle();
 
     if (existente) {
       return NextResponse.json({
         alreadyRegistered: true,
         message: 'Você já manifestou interesse nesta oportunidade.',
-        status: (existente as any).status
+        status: (existente as any).status || 'Pendente'
       });
     }
 
-    // 3. Busca o técnico responsável pela unidade do jovem (se houver)
-    const { data: jovem } = await (adminSupabase.from('jovens') as any)
-      .select('id, equipamento_id, nome_completo, nome_social')
-      .eq('id', user.id)
-      .single();
-
+    // 4. Busca o técnico responsável pela unidade do jovem (se houver)
     let tecnicoId = null;
-    if (jovem?.equipamento_id) {
+    if (jovem.equipamento_id) {
       const { data: tecnico } = await (adminSupabase.from('tecnicos') as any)
         .select('id')
         .eq('equipamento_id', jovem.equipamento_id)
@@ -112,13 +142,13 @@ export async function POST(request: Request) {
       if (tecnico) tecnicoId = tecnico.id;
     }
 
-    // 4. Insere o encaminhamento com status 'Interesse Manifestado'
+    // 5. Insere o encaminhamento com status 'Pendente' (compatível com a constraint do banco)
     const { data: novoEncaminhamento, error: insertErr } = await (adminSupabase.from('encaminhamentos_vagas') as any)
       .insert({
         vaga_id: vagaId,
-        jovem_id: user.id,
+        jovem_id: jovem.id,
         tecnico_id: tecnicoId,
-        status: 'Interesse Manifestado',
+        status: 'Pendente',
         feedback_jovem: 'Interesse manifestado pelo jovem através do portal DescubraHub.',
         updated_at: new Date().toISOString()
       })
@@ -127,12 +157,15 @@ export async function POST(request: Request) {
 
     if (insertErr) {
       console.error('Erro ao registrar manifestação de interesse:', insertErr);
-      return NextResponse.json({ error: 'Falha ao registrar manifestação de interesse.' }, { status: 500 });
+      return NextResponse.json({ 
+        error: insertErr.message || 'Falha ao registrar manifestação de interesse.' 
+      }, { status: 500 });
     }
 
     return NextResponse.json({
       success: true,
       message: 'Interesse manifestado com sucesso! A equipe técnica do seu equipamento avaliará seu perfil para o encaminhamento.',
+      status: 'Pendente',
       encaminhamento: novoEncaminhamento
     });
 

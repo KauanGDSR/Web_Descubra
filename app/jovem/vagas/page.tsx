@@ -16,7 +16,8 @@ import {
   CheckCircle2,
   Send,
   Info,
-  AlertCircle
+  AlertCircle,
+  HelpCircle
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { createClient } from '@/utils/supabase/client';
@@ -44,10 +45,11 @@ export default function VagasPage() {
   const [loading, setLoading] = useState(true);
   const [vagaSelecionada, setVagaSelecionada] = useState<Vaga | null>(null);
 
-  // Estados de manifestação de interesse
+  // Estados de manifestação de interesse e confirmação
   const [manifestedVagas, setManifestedVagas] = useState<Record<string, string>>({});
   const [isManifesting, setIsManifesting] = useState(false);
   const [manifestFeedback, setManifestFeedback] = useState<{ type: 'success' | 'error' | 'info'; text: string } | null>(null);
+  const [confirmingVaga, setConfirmingVaga] = useState<Vaga | null>(null);
 
   const fetchVagas = async () => {
     const supabase = createClient();
@@ -117,23 +119,26 @@ export default function VagasPage() {
       if (res.ok) {
         setManifestedVagas((prev) => ({
           ...prev,
-          [vagaId]: json.status || 'Interesse Manifestado',
+          [vagaId]: json.status || 'Pendente',
         }));
         setManifestFeedback({
           type: 'success',
           text: json.message || 'Interesse manifestado com sucesso! Seu técnico de referência foi notificado.',
         });
+        setConfirmingVaga(null);
       } else {
         setManifestFeedback({
           type: 'error',
           text: json.error || 'Não foi possível registrar o interesse.',
         });
+        setConfirmingVaga(null);
       }
     } catch {
       setManifestFeedback({
         type: 'error',
         text: 'Erro de comunicação com o servidor. Tente novamente.',
       });
+      setConfirmingVaga(null);
     } finally {
       setIsManifesting(false);
     }
@@ -453,10 +458,13 @@ export default function VagasPage() {
                   <button
                     type="button"
                     disabled={isManifesting}
-                    onClick={() => handleManifestarInteresse(vagaSelecionada.id)}
+                    onClick={() => {
+                      setManifestFeedback(null);
+                      setConfirmingVaga(vagaSelecionada);
+                    }}
                     style={{
                       width: '100%',
-                      background: 'var(--color-secondary, #2563eb)',
+                      background: 'var(--color-primary, #0D5C3A)',
                       color: '#fff',
                       border: 'none',
                       padding: '0.9rem',
@@ -468,21 +476,12 @@ export default function VagasPage() {
                       alignItems: 'center',
                       justifyContent: 'center',
                       gap: '0.5rem',
-                      boxShadow: '0 4px 12px rgba(37, 99, 235, 0.25)',
+                      boxShadow: '0 4px 12px rgba(13, 92, 58, 0.25)',
                       transition: 'filter 0.2s',
                     }}
                   >
-                    {isManifesting ? (
-                      <>
-                        <Loader2 className="animate-spin" size={18} />
-                        Enviando manifestação...
-                      </>
-                    ) : (
-                      <>
-                        <Send size={18} />
-                        Manifestar Interesse nesta Vaga
-                      </>
-                    )}
+                    <Send size={18} />
+                    Manifestar Interesse nesta Vaga
                   </button>
                 )}
 
@@ -502,6 +501,143 @@ export default function VagasPage() {
                   }}
                 >
                   Fechar
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Modal de Confirmação Prévia antes de Registrar */}
+      <AnimatePresence>
+        {confirmingVaga && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            style={{
+              position: 'fixed',
+              inset: 0,
+              backgroundColor: 'rgba(0, 0, 0, 0.65)',
+              backdropFilter: 'blur(4px)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 1100,
+              padding: '1rem',
+            }}
+            onClick={() => {
+              if (!isManifesting) setConfirmingVaga(null);
+            }}
+          >
+            <motion.div
+              initial={{ scale: 0.92, y: 15 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.92, y: 15 }}
+              onClick={(e) => e.stopPropagation()}
+              style={{
+                background: '#fff',
+                borderRadius: '1rem',
+                maxWidth: '460px',
+                width: '100%',
+                padding: '1.75rem',
+                boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '1.1rem',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
+                <div style={{
+                  background: '#fef3c7',
+                  color: '#d97706',
+                  width: '46px',
+                  height: '46px',
+                  borderRadius: '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0
+                }}>
+                  <HelpCircle size={26} />
+                </div>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: '1.15rem', color: 'var(--color-primary)', fontWeight: 800 }}>
+                    Confirmar Interesse na Vaga?
+                  </h3>
+                  <p style={{ margin: '0.2rem 0 0 0', fontSize: '0.82rem', color: '#64748b' }}>
+                    Confirmação de encaminhamento socioassistencial
+                  </p>
+                </div>
+              </div>
+
+              <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '0.75rem', padding: '1rem', fontSize: '0.88rem' }}>
+                <p style={{ margin: '0 0 0.5rem 0', color: '#475569', lineHeight: 1.4 }}>
+                  Você realmente deseja manifestar interesse na oportunidade:
+                </p>
+                <div style={{ fontWeight: 800, color: 'var(--color-primary)', fontSize: '1rem', marginBottom: '0.25rem' }}>
+                  {confirmingVaga.titulo}
+                </div>
+                <div style={{ color: '#64748b', fontSize: '0.84rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                  <Building size={14} /> {confirmingVaga.empresa} &bull; <MapPin size={14} /> {confirmingVaga.cidade}
+                </div>
+              </div>
+
+              <p style={{ margin: 0, fontSize: '0.82rem', color: '#64748b', lineHeight: 1.45 }}>
+                Ao confirmar, seu interesse será registrado no sistema e encaminhado à equipe técnica do seu <strong>CRAS/CREAS</strong> para avaliação de perfil e preparação para a entrevista.
+              </p>
+
+              <div style={{ display: 'flex', gap: '0.75rem', marginTop: '0.25rem' }}>
+                <button
+                  type="button"
+                  disabled={isManifesting}
+                  onClick={() => setConfirmingVaga(null)}
+                  style={{
+                    flex: 1,
+                    background: '#f1f5f9',
+                    color: '#475569',
+                    border: 'none',
+                    padding: '0.8rem',
+                    borderRadius: '0.65rem',
+                    fontWeight: 600,
+                    fontSize: '0.9rem',
+                    cursor: isManifesting ? 'not-allowed' : 'pointer',
+                  }}
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="button"
+                  disabled={isManifesting}
+                  onClick={() => handleManifestarInteresse(confirmingVaga.id)}
+                  style={{
+                    flex: 1.6,
+                    background: 'var(--color-primary)',
+                    color: '#fff',
+                    border: 'none',
+                    padding: '0.8rem',
+                    borderRadius: '0.65rem',
+                    fontWeight: 700,
+                    fontSize: '0.92rem',
+                    cursor: isManifesting ? 'not-allowed' : 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '0.45rem',
+                    boxShadow: '0 4px 12px rgba(13, 92, 58, 0.25)'
+                  }}
+                >
+                  {isManifesting ? (
+                    <>
+                      <Loader2 className="animate-spin" size={16} />
+                      Registrando...
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle2 size={16} />
+                      Sim, Confirmar Interesse
+                    </>
+                  )}
                 </button>
               </div>
             </motion.div>

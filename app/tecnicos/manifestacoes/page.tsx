@@ -166,10 +166,10 @@ export default function TecnicoManifestacoesPage() {
       if (!matchesSearch) return false;
 
       if (selectedStatus === 'todos') return true;
-      if (selectedStatus === 'pendentes') return m.status === 'Interesse Manifestado' || m.status === 'Pendente';
+      if (selectedStatus === 'pendentes') return m.status === 'Pendente' || m.status === 'Interesse Manifestado';
       if (selectedStatus === 'entrevistas') return m.status === 'Entrevista Agendada';
-      if (selectedStatus === 'encaminhados') return m.status === 'Encaminhado' || m.status === 'Aprovado';
-      if (selectedStatus === 'recusados') return m.status === 'Recusado' || m.status === 'Reprovado';
+      if (selectedStatus === 'encaminhados') return m.status === 'Aprovado' || m.status === 'Encaminhado';
+      if (selectedStatus === 'recusados') return m.status === 'Rejeitado' || m.status === 'Cancelado';
 
       return m.status === selectedStatus;
     });
@@ -178,9 +178,9 @@ export default function TecnicoManifestacoesPage() {
   // Contagens
   const stats = useMemo(() => {
     const total = manifestacoes.length;
-    const pendentes = manifestacoes.filter((m) => m.status === 'Interesse Manifestado' || m.status === 'Pendente').length;
+    const pendentes = manifestacoes.filter((m) => m.status === 'Pendente' || m.status === 'Interesse Manifestado').length;
     const entrevistas = manifestacoes.filter((m) => m.status === 'Entrevista Agendada').length;
-    const concluidos = manifestacoes.filter((m) => m.status === 'Encaminhado' || m.status === 'Aprovado').length;
+    const concluidos = manifestacoes.filter((m) => m.status === 'Aprovado' || m.status === 'Encaminhado').length;
     return { total, pendentes, entrevistas, concluidos };
   }, [manifestacoes]);
 
@@ -523,12 +523,11 @@ export default function TecnicoManifestacoesPage() {
                   style={{ width: '100%' }}
                   required
                 >
-                  <option value="Interesse Manifestado">Interesse Manifestado (Aguardando Análise)</option>
-                  <option value="Em Análise">Em Análise Técnica Socioassistencial</option>
+                  <option value="Pendente">Interesse Manifestado / Aguardando Avaliação</option>
                   <option value="Entrevista Agendada">Entrevista Agendada com a Empresa</option>
-                  <option value="Encaminhado">Encaminhado Oficialmente</option>
                   <option value="Aprovado">Aprovado no Processo Seletivo</option>
-                  <option value="Recusado">Não Recomendado / Perfil Divergente</option>
+                  <option value="Rejeitado">Não Recomendado / Perfil Divergente</option>
+                  <option value="Cancelado">Cancelado</option>
                 </select>
               </div>
 
