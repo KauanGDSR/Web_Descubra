@@ -89,7 +89,7 @@ export async function GET(request: NextRequest) {
     }
 
     // 3. Processa cada jovem aplicando o Motor de Pontuação de Vulnerabilidade (módulo compartilhado)
-    const filaInteligente = (jovens as Array<{ id: string; nome_social?: string | null; nome_completo: string; idade?: number | null; bairro?: string | null; turno_escolar?: string | null; escolaridade?: string | null; tipo_inscricao?: string | null; codigo_acesso?: string | null; fez_pre_aprendizagem?: boolean | null; passou_pre_aprendizagem?: boolean | null; equipamentos?: { nome: string } | { nome: string }[] | null }>).map((jovem) => {
+    const filaInteligente = (jovens as Array<{ id: string; nome_social?: string | null; nome_completo: string; idade?: number | null; bairro?: string | null; turno_escolar?: string | null; escolaridade?: string | null; tipo_inscricao?: string | null; fez_pre_aprendizagem?: boolean | null; passou_pre_aprendizagem?: boolean | null; equipamentos?: { nome: string } | { nome: string }[] | null }>).map((jovem) => {
       const acs = acompanhamentosPorJovem[jovem.id] || [];
       const resultadoVulnerabilidade = calcularScoreVulnerabilidade(jovem, acs);
 
@@ -108,7 +108,6 @@ export async function GET(request: NextRequest) {
         turno_escolar: jovem.turno_escolar,
         escolaridade: jovem.escolaridade,
         tipo_inscricao: jovem.tipo_inscricao,
-        codigo_acesso: jovem.codigo_acesso,
         equipamento: equipamentoNome,
         score: resultadoVulnerabilidade.score,
         classificacao: resultadoVulnerabilidade.classificacao,

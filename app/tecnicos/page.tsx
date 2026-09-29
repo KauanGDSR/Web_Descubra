@@ -289,7 +289,7 @@ export default function TecnicoOverviewPage() {
              <div style={{ display: 'flex', gap: '0.5rem', padding: '0.75rem', background: 'rgba(245,158,11,0.06)', border: '1px solid rgba(245,158,11,0.15)', borderRadius: '6px' }}>
                <Sparkles size={16} style={{ color: 'var(--color-yellow)', flexShrink: 0, marginTop: '0.1rem' }} />
                <p style={{ fontSize: '0.72rem', color: '#b45309', lineHeight: '1.4', fontWeight: 600 }}>
-                 <strong>Gamificação Ativa:</strong> Jovens acumulam pontos registrando relatos e depoimentos, e mantendo boa assiduidade e comportamento nos equipamentos. Os pontos podem ser trocados na Loja de Prêmios.
+                 <strong>Gamificação Ativa:</strong> Jovens acumulam pontos mantendo boa frequência, assiduidade e comportamento nos equipamentos. Os pontos podem ser trocados na Loja de Prêmios.
                </p>
              </div>
            </div>

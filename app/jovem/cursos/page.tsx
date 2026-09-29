@@ -26,8 +26,20 @@ interface JovemCursos {
   areas_interesse: string[] | null;
 }
 
+interface CursoCapacitacao {
+  id: string;
+  titulo: string;
+  parceiro_nome: string;
+  carga_horaria?: string;
+  modalidade?: string;
+  descricao?: string;
+  status?: string;
+  link_inscricao?: string;
+}
+
 export default function CursosPage() {
   const [jovemData, setJovemData] = useState<JovemCursos | null>(null);
+  const [cursos, setCursos] = useState<CursoCapacitacao[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -35,28 +47,36 @@ export default function CursosPage() {
       const supabase = createClient();
       try {
         const { data: { session } } = await supabase.auth.getSession();
+        if (!session?.user?.id) {
+          window.location.href = '/login';
+          return;
+        }
+
+        const { data } = await supabase
+          .from('jovens')
+          .select('nome_completo, fez_pre_aprendizagem, passou_pre_aprendizagem, curso_pre_aprendizagem, curso_encaminhado, entidade_formadora, areas_interesse')
+          .eq('id', session.user.id)
+          .maybeSingle();
         let jData: JovemCursos | null = null;
-
-        if (session?.user?.id) {
-          const { data } = await supabase
-            .from('jovens')
-            .select('nome_completo, fez_pre_aprendizagem, passou_pre_aprendizagem, curso_pre_aprendizagem, curso_encaminhado, entidade_formadora, areas_interesse')
-            .eq('id', session.user.id)
-            .maybeSingle();
-          if (data) jData = data as JovemCursos;
-        }
-
-        if (!jData) {
-          const { data } = await supabase
-            .from('jovens')
-            .select('nome_completo, fez_pre_aprendizagem, passou_pre_aprendizagem, curso_pre_aprendizagem, curso_encaminhado, entidade_formadora, areas_interesse')
-            .order('created_at', { ascending: false })
-            .limit(1)
-            .maybeSingle();
-          if (data) jData = data as JovemCursos;
-        }
+        if (data) jData = data as JovemCursos;
 
         setJovemData(jData);
+
+        // Buscar catálogo real de cursos cadastrados
+        try {
+          const { data: cursosData, error: cursosError } = await supabase
+            .from('cursos_capacitacoes')
+            .select('*')
+            .order('created_at', { ascending: false });
+
+          if (!cursosError && cursosData) {
+            setCursos(cursosData as CursoCapacitacao[]);
+          } else {
+            setCursos([]);
+          }
+        } catch {
+          setCursos([]);
+        }
       } catch (err) {
         console.error('Erro ao carregar dados de cursos:', err);
       } finally {
@@ -83,7 +103,7 @@ export default function CursosPage() {
       <header>
         <h2 style={{ fontSize: 'clamp(1.4rem, 5vw, 1.8rem)', color: 'var(--color-primary)' }}>Cursos & Capacitação Profissional</h2>
         <p style={{ color: 'var(--color-text-light)', marginTop: '0.4rem', fontSize: '0.95rem' }}>
-          Acompanhe sua formação técnica, cursos de pré-aprendizagem e trilhas profissionalizantes do Programa Descubra.
+          Acompanhe sua formação técnica, cursos de pré-aprendizagem e capacitações disponíveis no Programa Descubra.
         </p>
       </header>
 
@@ -147,79 +167,106 @@ export default function CursosPage() {
         )}
       </div>
 
-      {/* Trilhas e Capacitações Parceiras */}
+      {/* Trilhas e Capacitações Parceiras - SOMENTE DADOS REAIS */}
       <div>
         <h3 style={{ fontSize: '1.15rem', color: 'var(--color-primary)', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <GraduationCap size={20} /> Trilhas de Capacitação Ofertadas pelo Descubra
+          <GraduationCap size={20} /> Trilhas & Cursos Ofertados
         </h3>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1rem' }}>
-          {[
-            {
-              titulo: 'Auxiliar Administrativo & Rotinas de Escritório',
-              parceiro: 'SENAC Minas / Programa Descubra',
-              carga: '400 horas',
-              modalidade: 'Híbrido',
-              descricao: 'Capacitação completa em redação empresarial, atendimento ao público, arquivos e informática aplicada.',
-              status: 'Inscrições Abertas'
-            },
-            {
-              titulo: 'Operação de Computadores & Suporte em TI',
-              parceiro: 'SENAI / Programa Descubra',
-              carga: '360 horas',
-              modalidade: 'Presencial',
-              descricao: 'Introdução à informática corporativa, manutenção básica, pacote Office e suporte operacional aos sistemas.',
-              status: 'Em Planejamento'
-            },
-            {
-              titulo: 'Atendimento ao Cliente & Vendas no Varejo',
-              parceiro: 'Rede Cidadã / Programa Descubra',
-              carga: '280 horas',
-              modalidade: 'Presencial',
-              descricao: 'Técnicas de comunicação assertiva, relacionamento com clientes, etiqueta profissional e postura ética.',
-              status: 'Inscrições Abertas'
-            }
-          ].map((curso, idx) => (
-            <motion.div
-              key={idx}
-              whileHover={{ scale: 1.01 }}
-              style={{
-                background: '#fff',
-                borderRadius: '1rem',
-                border: '1px solid #e2e8f0',
-                padding: '1.25rem',
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'space-between',
-                gap: '1rem',
-                boxShadow: '0 2px 4px rgba(0,0,0,0.02)'
-              }}
-            >
-              <div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem' }}>
-                  <span style={{ background: '#f0fdf4', color: '#16a34a', padding: '0.2rem 0.6rem', borderRadius: '1rem', fontSize: '0.75rem', fontWeight: 600 }}>
-                    {curso.status}
-                  </span>
-                  <span style={{ fontSize: '0.8rem', color: '#64748b' }}>{curso.carga}</span>
+        {cursos.length === 0 ? (
+          <div style={{
+            background: '#fff',
+            borderRadius: '1rem',
+            border: '1px dashed #cbd5e1',
+            padding: '2.5rem 1.5rem',
+            textAlign: 'center',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '0.75rem'
+          }}>
+            <div style={{
+              width: 52,
+              height: 52,
+              borderRadius: '50%',
+              background: '#f1f5f9',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: '#64748b'
+            }}>
+              <BookOpen size={26} />
+            </div>
+            <h4 style={{ fontSize: '1.05rem', color: 'var(--color-primary)', margin: 0 }}>
+              Nenhum curso com inscrições abertas no momento
+            </h4>
+            <p style={{ fontSize: '0.9rem', color: '#64748b', maxWidth: '480px', margin: 0, lineHeight: 1.5 }}>
+              Assim que novas turmas forem abertas pelas entidades formadoras (SENAC, SENAI, Rede Cidadã) ou empresas parceiras, elas aparecerão listadas aqui com informações e orientações de inscrição.
+            </p>
+          </div>
+        ) : (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1rem' }}>
+            {cursos.map((curso) => (
+              <motion.div
+                key={curso.id}
+                whileHover={{ scale: 1.01 }}
+                style={{
+                  background: '#fff',
+                  borderRadius: '1rem',
+                  border: '1px solid #e2e8f0',
+                  padding: '1.25rem',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'space-between',
+                  gap: '1rem',
+                  boxShadow: '0 2px 4px rgba(0,0,0,0.02)'
+                }}
+              >
+                <div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem' }}>
+                    <span style={{ background: '#f0fdf4', color: '#16a34a', padding: '0.2rem 0.6rem', borderRadius: '1rem', fontSize: '0.75rem', fontWeight: 600 }}>
+                      {curso.status || 'Disponível'}
+                    </span>
+                    {curso.carga_horaria && (
+                      <span style={{ fontSize: '0.8rem', color: '#64748b' }}>{curso.carga_horaria}</span>
+                    )}
+                  </div>
+                  <h4 style={{ fontSize: '1rem', color: 'var(--color-primary)', marginBottom: '0.35rem', lineHeight: 1.3 }}>
+                    {curso.titulo}
+                  </h4>
+                  <p style={{ fontSize: '0.82rem', color: '#64748b', display: 'flex', alignItems: 'center', gap: '0.3rem', marginBottom: '0.6rem' }}>
+                    <Building size={14} /> {curso.parceiro_nome || 'Programa Descubra'}
+                  </p>
+                  {curso.descricao && (
+                    <p style={{ fontSize: '0.88rem', color: 'var(--color-text)', lineHeight: 1.5 }}>
+                      {curso.descricao}
+                    </p>
+                  )}
                 </div>
-                <h4 style={{ fontSize: '1rem', color: 'var(--color-primary)', marginBottom: '0.35rem', lineHeight: 1.3 }}>
-                  {curso.titulo}
-                </h4>
-                <p style={{ fontSize: '0.82rem', color: '#64748b', display: 'flex', alignItems: 'center', gap: '0.3rem', marginBottom: '0.6rem' }}>
-                  <Building size={14} /> {curso.parceiro}
-                </p>
-                <p style={{ fontSize: '0.88rem', color: 'var(--color-text)', lineHeight: 1.5 }}>
-                  {curso.descricao}
-                </p>
-              </div>
 
-              <div style={{ borderTop: '1px solid #f1f5f9', paddingTop: '0.75rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontSize: '0.8rem', color: '#64748b' }}>Modalidade: <strong>{curso.modalidade}</strong></span>
-                <span style={{ color: 'var(--color-primary)', fontWeight: 600, fontSize: '0.85rem' }}>Gratuito &bull; Programa Descubra</span>
-              </div>
-            </motion.div>
-          ))}
-        </div>
+                <div style={{ borderTop: '1px solid #f1f5f9', paddingTop: '0.75rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontSize: '0.8rem', color: '#64748b' }}>
+                    Modalidade: <strong>{curso.modalidade || 'Presencial'}</strong>
+                  </span>
+                  {curso.link_inscricao ? (
+                    <a
+                      href={curso.link_inscricao}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{ color: 'var(--color-primary)', fontWeight: 600, fontSize: '0.85rem', textDecoration: 'underline' }}
+                    >
+                      Inscrever-se &rarr;
+                    </a>
+                  ) : (
+                    <span style={{ color: 'var(--color-primary)', fontWeight: 600, fontSize: '0.85rem' }}>
+                      Gratuito &bull; Programa Descubra
+                    </span>
+                  )}
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

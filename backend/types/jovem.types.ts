@@ -27,8 +27,9 @@ export interface DbYouth {
   idade: number;
   bairro: string;
   cpf: string | null;
-  codigo_acesso: string | null;
   pontuacao_atual: number | null;
+  passou_pre_aprendizagem?: boolean | null;
+  fez_pre_aprendizagem?: boolean | null;
   areas_interesse: string[] | null;
   equipamento_id: string | null;
   equipamentos?: {
@@ -71,7 +72,6 @@ export interface JovemData {
   escolaridade: string | null;
   turno_escolar: string | null;
   entidade_formadora: string | null;
-  codigo_acesso: string | null;
   pontuacao_atual: number;
   passou_pre_aprendizagem: boolean;
   fez_pre_aprendizagem: boolean;

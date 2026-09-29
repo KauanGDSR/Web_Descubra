@@ -5,7 +5,7 @@ import { createClient } from '@/utils/supabase/client';
 
 export interface NotificationCounts {
   resgatesPendentes: number;
-  depoimentosPendentes: number;
+  manifestacoesPendentes: number;
   totalPendentes: number;
   loading: boolean;
   refresh: () => Promise<void>;
@@ -13,7 +13,7 @@ export interface NotificationCounts {
 
 export function useAdminNotificationCounts(): NotificationCounts {
   const [resgatesPendentes, setResgatesPendentes] = useState<number>(0);
-  const [depoimentosPendentes, setDepoimentosPendentes] = useState<number>(0);
+  const [manifestacoesPendentes, setManifestacoesPendentes] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(true);
   const originalTitleRef = useRef<string>('');
 
@@ -25,7 +25,7 @@ export function useAdminNotificationCounts(): NotificationCounts {
       if (res.ok) {
         const data = await res.json();
         setResgatesPendentes(data.resgatesPendentes || 0);
-        setDepoimentosPendentes(data.depoimentosPendentes || 0);
+        setManifestacoesPendentes(data.manifestacoesPendentes || 0);
       }
     } catch (err) {
       console.error('Erro ao buscar contagens de notificações pendentes:', err);
@@ -66,7 +66,7 @@ export function useAdminNotificationCounts(): NotificationCounts {
       )
       .on(
         'postgres_changes',
-        { event: '*', schema: 'public', table: 'depoimentos_alunos' },
+        { event: '*', schema: 'public', table: 'encaminhamentos_vagas' },
         () => {
           fetchCounts();
         }
@@ -89,7 +89,7 @@ export function useAdminNotificationCounts(): NotificationCounts {
       originalTitleRef.current = document.title.replace(/^\(\d+\)\s*/, '');
     }
 
-    const total = resgatesPendentes + depoimentosPendentes;
+    const total = resgatesPendentes + manifestacoesPendentes;
     const baseTitle = document.title.replace(/^\(\d+\)\s*/, '');
 
     if (total > 0) {
@@ -103,12 +103,12 @@ export function useAdminNotificationCounts(): NotificationCounts {
         document.title = document.title.replace(/^\(\d+\)\s*/, '');
       }
     };
-  }, [resgatesPendentes, depoimentosPendentes]);
+  }, [resgatesPendentes, manifestacoesPendentes]);
 
   return {
     resgatesPendentes,
-    depoimentosPendentes,
-    totalPendentes: resgatesPendentes + depoimentosPendentes,
+    manifestacoesPendentes,
+    totalPendentes: resgatesPendentes + manifestacoesPendentes,
     loading,
     refresh: fetchCounts
   };

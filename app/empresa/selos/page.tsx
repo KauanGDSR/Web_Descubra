@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React, { useState } from 'react';
 import { 
@@ -6,9 +6,9 @@ import {
   TrendingUp, Trophy, Newspaper, Globe, ShieldCheck, Briefcase
 } from 'lucide-react';
 
-const BronzeSeal = { src: '/assets/selo-bronze.png.jpeg' };
-const PrataSeal = { src: '/assets/selo-prata.png.jpeg' };
-const OuroSeal = { src: '/assets/selo-ouro.png.jpeg' };
+const BronzeSeal = { src: '/assets/selo-bronze.png' };
+const PrataSeal = { src: '/assets/selo-prata.png' };
+const OuroSeal = { src: '/assets/selo-ouro.png' };
 
 type TabType = 'bronze' | 'prata' | 'ouro';
 

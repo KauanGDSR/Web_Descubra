@@ -30,7 +30,6 @@ interface JovemFila {
   turno_escolar: string;
   escolaridade: string;
   tipo_inscricao: string;
-  codigo_acesso: string | null;
   equipamento: string;
   score: number;
   classificacao: 'Crítico' | 'Médio' | 'Baixo';

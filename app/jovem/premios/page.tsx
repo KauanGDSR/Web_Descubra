@@ -60,32 +60,23 @@ export default function JovemPremiosPage() {
     setLoading(true);
     try {
       const { data: { session } } = await supabase.auth.getSession();
-      let jId = session?.user?.id;
+      const jId = session?.user?.id;
 
       if (!jId) {
-        // Fallback conta demo
-        const { data: demo } = await supabase
-          .from('jovens')
-          .select('id, pontuacao_atual')
-          .order('created_at', { ascending: false })
-          .limit(1)
-          .single();
-        if (demo) {
-          jId = demo.id;
-          setPontosAtual(demo.pontuacao_atual ?? 0);
-        }
-      } else {
-        const { data: perfil } = await supabase
-          .from('jovens')
-          .select('id, pontuacao_atual')
-          .eq('id', jId)
-          .single();
-        if (perfil) {
-          setPontosAtual(perfil.pontuacao_atual ?? 0);
-        }
+        window.location.href = '/login';
+        return;
       }
 
-      setJovemId(jId || null);
+      const { data: perfil } = await supabase
+        .from('jovens')
+        .select('id, pontuacao_atual')
+        .eq('id', jId)
+        .single();
+      if (perfil) {
+        setPontosAtual(perfil.pontuacao_atual ?? 0);
+      }
+
+      setJovemId(jId);
 
       // Busca prêmios ativos
       const { data: premiosData } = await supabase
@@ -131,7 +122,7 @@ export default function JovemPremiosPage() {
     if (pontosAtual < premio.custo_pontos) {
       dialog.alert(
         'Pontos Insuficientes',
-        `Você possui <b>${pontosAtual} pontos</b>. Este prêmio requer <b>${premio.custo_pontos} pontos</b>.<br/><br/>Participe das oficinas, cumpra as tarefas e registre depoimentos para conquistar mais pontos!`,
+        `Você possui <b>${pontosAtual} pontos</b>. Este prêmio requer <b>${premio.custo_pontos} pontos</b>.<br/><br/>Participe das oficinas e cumpra as tarefas nos equipamentos para conquistar mais pontos!`,
         'warning'
       );
       return;
@@ -236,7 +227,7 @@ export default function JovemPremiosPage() {
       }}>
         <Info size={22} style={{ color: '#d97706', flexShrink: 0 }} />
         <p style={{ margin: 0, fontSize: '0.84rem', color: '#92400e', lineHeight: 1.5 }}>
-          <strong>Como ganhar mais pontos?</strong> Mantenha boa frequência nas oficinas socioassistenciais, envie relatos e depoimentos no painel do aluno e conclua as etapas de pré-aprendizagem.
+          <strong>Como ganhar mais pontos?</strong> Mantenha boa frequência nas oficinas socioassistenciais, participe ativamente das atividades e conclua as etapas de pré-aprendizagem.
         </p>
       </div>
 
@@ -551,7 +542,7 @@ export default function JovemPremiosPage() {
               </div>
               <div>
                 <span style={{ fontSize: '0.68rem', color: 'var(--color-secondary)', display: 'block' }}>Saldo Restante</span>
-                <strong style={{ fontSize: '1rem', color: 'var(--color-secondary)' }}>{pontosAtual - premioSelecionado.custo_pontos} pts</strong>
+                <strong style={{ fontSize: '1rem', color: 'var(--color-secondary)' }}>{Math.max(0, pontosAtual - premioSelecionado.custo_pontos)} pts</strong>
               </div>
             </div>
 

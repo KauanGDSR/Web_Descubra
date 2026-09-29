@@ -8,13 +8,10 @@ import {
   Settings, 
   HelpCircle, 
   Phone, 
-  Mail, 
   MapPin, 
   Building, 
   Calendar, 
   GraduationCap, 
-  KeyRound, 
-  Copy, 
   Check, 
   ChevronDown, 
   ChevronUp, 
@@ -26,10 +23,13 @@ import {
   Briefcase, 
   ShieldCheck, 
   Tag, 
-  ExternalLink,
-  MessageCircle,
-  Clock,
-  Sparkles
+  MessageCircle, 
+  Clock, 
+  Sparkles,
+  Home,
+  FileCheck2,
+  Award,
+  Info
 } from 'lucide-react';
 import { createClient } from '@/utils/supabase/client';
 
@@ -53,7 +53,8 @@ interface JovemProfile {
   escolaridade: string | null;
   turno_escolar: string | null;
   entidade_formadora: string | null;
-  codigo_acesso: string | null;
+  curso_encaminhado: string | null;
+  curso_pre_aprendizagem: string | null;
   pontuacao_atual: number;
   tipo_inscricao: string | null;
   passou_pre_aprendizagem: boolean;
@@ -70,7 +71,22 @@ interface JovemProfile {
   possui_deficiencia: boolean | null;
   deficiencia_qual: string | null;
   areas_interesse: string[] | null;
-  equipamentos?: any;
+  equipamento_id: string | null;
+  equipamentos?: {
+    id: string;
+    nome: string;
+    tipo: string;
+    cidades?: {
+      nome: string;
+    };
+  } | null;
+}
+
+interface TecnicoInfo {
+  id: string;
+  nome: string;
+  telefone_whatsapp: string | null;
+  cargo: string;
 }
 
 const FAQS = [
@@ -88,13 +104,39 @@ const FAQS = [
   },
   {
     q: 'O que é a pontuação do Programa Descubra e como ganho mais?',
-    a: 'É um índice calculado com base em critérios de vulnerabilidade social previstos nas diretrizes do Descubra. Você acumula pontos mantendo boa assiduidade nas oficinas socioassistenciais, enviando relatos de trajetória na aba Meu Progresso e concluindo as etapas de pré-aprendizagem. Os pontos podem ser trocados por prêmios na Loja de Prêmios!'
+    a: 'É um índice calculado com base em critérios de vulnerabilidade social previstos nas diretrizes do Descubra. Você acumula pontos mantendo boa assiduidade nas oficinas socioassistenciais, participando das capacitações e concluindo as etapas de pré-aprendizagem. Os pontos podem ser trocados por prêmios na Loja de Prêmios!'
   },
   {
     q: 'Como falar com meu técnico de referência?',
-    a: 'Você pode comparecer presencialmente na sua Unidade de Referência (CREAS / CRAS cadastrado) ou solicitar contato pelo telefone ou WhatsApp da coordenação do Programa Descubra informados logo abaixo nesta aba.'
+    a: 'Você pode comparecer presencialmente na sua Unidade de Referência (CREAS / CRAS cadastrado) ou entrar em contato direto pelo WhatsApp ou telefone do técnico informados nesta aba.'
   }
 ];
+
+function formatCpf(val?: string | null) {
+  if (!val) return '—';
+  const clean = val.replace(/\D/g, '');
+  if (clean.length === 11) {
+    return `${clean.slice(0, 3)}.${clean.slice(3, 6)}.${clean.slice(6, 9)}-${clean.slice(9)}`;
+  }
+  return val;
+}
+
+function formatDate(val?: string | null) {
+  if (!val) return '—';
+  const parts = val.split('-');
+  if (parts.length === 3) {
+    return `${parts[2]}/${parts[1]}/${parts[0]}`;
+  }
+  return val;
+}
+
+function cleanPhoneForLink(phone?: string | null): string | null {
+  if (!phone) return null;
+  const digits = phone.replace(/\D/g, '');
+  if (digits.startsWith('55') && digits.length >= 12) return digits;
+  if (digits.length >= 10) return `55${digits}`;
+  return null;
+}
 
 function ConfiguracoesContent() {
   const searchParams = useSearchParams();
@@ -106,8 +148,8 @@ function ConfiguracoesContent() {
 
   const [activeTab, setActiveTab] = useState<'perfil' | 'suporte'>(initialTab);
   const [profile, setProfile] = useState<JovemProfile | null>(null);
+  const [tecnico, setTecnico] = useState<TecnicoInfo | null>(null);
   const [loading, setLoading] = useState(true);
-  const [copiedPin, setCopiedPin] = useState(false);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
 
   useEffect(() => {
@@ -117,26 +159,41 @@ function ConfiguracoesContent() {
         const { data: { session } } = await supabase.auth.getSession();
         let loadedProfile: JovemProfile | null = null;
 
-        if (session?.user?.id) {
-          const { data } = await supabase
-            .from('jovens')
-            .select('*, equipamentos(nome, tipo, endereco, telefone)')
-            .eq('id', session.user.id)
-            .maybeSingle();
-          if (data) loadedProfile = data as unknown as JovemProfile;
+        // 1. Validar autenticação do jovem
+        if (!session?.user?.id) {
+          window.location.href = '/login';
+          return;
         }
 
-        if (!loadedProfile) {
-          const { data } = await supabase
-            .from('jovens')
-            .select('*, equipamentos(nome, tipo, endereco, telefone)')
-            .order('created_at', { ascending: false })
-            .limit(1)
-            .maybeSingle();
-          if (data) loadedProfile = data as unknown as JovemProfile;
+        const { data, error } = await supabase
+          .from('jovens')
+          .select('*, equipamentos(id, nome, tipo, cidades(nome))')
+          .eq('id', session.user.id)
+          .maybeSingle();
+
+        if (!error && data) {
+          loadedProfile = data as unknown as JovemProfile;
+        } else {
+          window.location.href = '/login';
+          return;
         }
 
         setProfile(loadedProfile);
+
+        // 3. Carregar dados reais do técnico de referência da unidade do jovem
+        if (loadedProfile?.equipamento_id) {
+          const { data: tecData } = await supabase
+            .from('tecnicos')
+            .select('id, nome, telefone_whatsapp, cargo')
+            .eq('equipamento_id', loadedProfile.equipamento_id)
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .maybeSingle();
+
+          if (tecData) {
+            setTecnico(tecData as TecnicoInfo);
+          }
+        }
       } catch (err) {
         console.error('Erro ao buscar dados do jovem:', err);
       } finally {
@@ -152,32 +209,27 @@ function ConfiguracoesContent() {
     router.replace(`/jovem/configuracoes?tab=${tab}`, { scroll: false });
   };
 
-  const handleCopyPin = (pin: string) => {
-    if (!pin) return;
-    navigator.clipboard.writeText(pin);
-    setCopiedPin(true);
-    setTimeout(() => setCopiedPin(false), 2000);
-  };
-
   if (loading) {
     return (
       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '60vh', flexDirection: 'column', gap: '1rem' }}>
         <Loader2 className="animate-spin" size={40} color="var(--color-primary)" />
-        <p style={{ color: 'var(--color-text-light)' }}>Carregando configurações da sua conta...</p>
+        <p style={{ color: 'var(--color-text-light)' }}>Carregando dados oficiais do aluno...</p>
       </div>
     );
   }
 
-  const displayName = profile?.nome_social || profile?.nome_completo || 'Jovem Aprendiz';
-  const poloNome = Array.isArray(profile?.equipamentos)
-    ? (profile?.equipamentos[0]?.nome || 'CREAS Pirapora')
-    : (profile?.equipamentos?.nome || 'CREAS Pirapora');
+  const displayName = profile?.nome_social || profile?.nome_completo || 'Aluno Descubra';
+  const poloNome = profile?.equipamentos?.nome || 'Unidade de Referência Descubra';
+  const cidadeNome = profile?.equipamentos?.cidades?.nome || 'Pirapora';
 
-  const statusLabel = profile?.passou_pre_aprendizagem 
-    ? 'Apto para Vagas de Aprendizagem' 
-    : profile?.fez_pre_aprendizagem 
-      ? 'Em Capacitação / Pré-Aprendizagem' 
-      : 'Em Acompanhamento Técnico';
+  const statusLabel = profile?.passou_pre_aprendizagem || profile?.fez_pre_aprendizagem
+    ? 'Pré-Aprendizagem Concluída' 
+    : 'Em Acompanhamento / Pré-Aprendizagem';
+
+  const whatsappTecnicoLimpo = cleanPhoneForLink(tecnico?.telefone_whatsapp);
+  const whatsappMsg = encodeURIComponent(
+    `Olá ${tecnico?.nome ? tecnico.nome : 'equipe técnica'}, sou o(a) aluno(a) ${displayName} do Programa Descubra e gostaria de tirar uma dúvida.`
+  );
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', maxWidth: '900px', margin: '0 auto', width: '100%' }}>
@@ -189,10 +241,10 @@ function ConfiguracoesContent() {
           </div>
           <div>
             <h2 style={{ fontSize: 'clamp(1.3rem, 4vw, 1.7rem)', color: 'var(--color-primary)', margin: 0, fontWeight: 800 }}>
-              Configurações
+              Configurações & Perfil
             </h2>
             <p style={{ color: 'var(--color-text-light)', marginTop: '0.2rem', fontSize: '0.88rem' }}>
-              Gerencie seus dados pessoais, código de acesso e acesse o suporte oficial.
+              Dados cadastrais oficiais e contato direto com seu técnico de referência.
             </p>
           </div>
         </div>
@@ -273,7 +325,7 @@ function ConfiguracoesContent() {
           transition={{ duration: 0.2 }}
           style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}
         >
-          {/* Hero Card do Perfil */}
+          {/* Hero Card do Perfil com Dados Reais */}
           <div
             style={{
               background: 'linear-gradient(135deg, var(--color-primary) 0%, #1e3a5f 100%)',
@@ -318,17 +370,17 @@ function ConfiguracoesContent() {
                   )}
                 </div>
                 <p style={{ margin: '0.2rem 0 0', fontSize: '0.88rem', opacity: 0.85 }}>
-                  {poloNome} &bull; {profile?.bairro || 'Pirapora - MG'}
+                  {poloNome} &bull; {cidadeNome} - MG
                 </p>
               </div>
 
               {/* Status Badge */}
               <div
                 style={{
-                  background: profile?.passou_pre_aprendizagem ? 'rgba(34, 197, 94, 0.2)' : 'rgba(14, 165, 233, 0.2)',
-                  border: profile?.passou_pre_aprendizagem ? '1px solid #22c55e' : '1px solid #38bdf8',
+                  background: profile?.passou_pre_aprendizagem || profile?.fez_pre_aprendizagem ? 'rgba(34, 197, 94, 0.25)' : 'rgba(14, 165, 233, 0.25)',
+                  border: profile?.passou_pre_aprendizagem || profile?.fez_pre_aprendizagem ? '1px solid #22c55e' : '1px solid #38bdf8',
                   color: '#ffffff',
-                  padding: '0.4rem 0.8rem',
+                  padding: '0.4rem 0.85rem',
                   borderRadius: '2rem',
                   fontSize: '0.8rem',
                   fontWeight: 700,
@@ -337,67 +389,16 @@ function ConfiguracoesContent() {
                   gap: '0.4rem'
                 }}
               >
-                <ShieldCheck size={14} />
+                <ShieldCheck size={15} />
                 {statusLabel}
               </div>
             </div>
-
-            {/* Código de Acesso / PIN Card */}
-            {profile?.codigo_acesso && (
-              <div
-                style={{
-                  background: 'rgba(255, 255, 255, 0.1)',
-                  borderRadius: '0.75rem',
-                  padding: '0.75rem 1rem',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  flexWrap: 'wrap',
-                  gap: '0.75rem',
-                  border: '1px dashed rgba(255, 255, 255, 0.25)'
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <KeyRound size={18} color="#f59e0b" />
-                  <div>
-                    <span style={{ fontSize: '0.72rem', opacity: 0.8, textTransform: 'uppercase', letterSpacing: '0.04em', display: 'block' }}>
-                      Seu Código de Acesso (PIN)
-                    </span>
-                    <strong style={{ fontSize: '1.1rem', letterSpacing: '0.1em', fontFamily: 'monospace' }}>
-                      {profile.codigo_acesso}
-                    </strong>
-                  </div>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={() => handleCopyPin(profile.codigo_acesso || '')}
-                  style={{
-                    background: copiedPin ? '#22c55e' : 'rgba(255, 255, 255, 0.2)',
-                    color: '#ffffff',
-                    border: 'none',
-                    padding: '0.4rem 0.85rem',
-                    borderRadius: '0.5rem',
-                    fontSize: '0.78rem',
-                    fontWeight: 700,
-                    cursor: 'pointer',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '0.35rem',
-                    transition: 'all 0.15s ease'
-                  }}
-                >
-                  {copiedPin ? <Check size={14} /> : <Copy size={14} />}
-                  {copiedPin ? 'Copiado!' : 'Copiar PIN'}
-                </button>
-              </div>
-            )}
           </div>
 
-          {/* Card: Dados Pessoais & Contato */}
+          {/* Card 1: Dados Pessoais & Contato */}
           <div style={sectionCardStyle}>
             <h4 style={sectionHeaderStyle}>
-              <UserCircle size={18} color="var(--color-primary)" /> Informações Pessoais & Contato
+              <UserCircle size={18} color="var(--color-primary)" /> Dados Cadastrais & Contato
             </h4>
 
             <div style={gridFieldsStyle}>
@@ -409,20 +410,20 @@ function ConfiguracoesContent() {
               {profile?.possui_nome_social && (
                 <div style={fieldItemStyle}>
                   <span style={fieldLabelStyle}>Nome Social</span>
-                  <strong style={fieldValueStyle}>{profile?.nome_social}</strong>
+                  <strong style={fieldValueStyle}>{profile?.nome_social || '—'}</strong>
                 </div>
               )}
 
               <div style={fieldItemStyle}>
                 <span style={fieldLabelStyle}>CPF</span>
-                <strong style={fieldValueStyle}>{profile?.cpf || 'Cadastrado no sistema'}</strong>
+                <strong style={fieldValueStyle}>{formatCpf(profile?.cpf)}</strong>
               </div>
 
               <div style={fieldItemStyle}>
-                <span style={fieldLabelStyle}>Idade & Nascimento</span>
+                <span style={fieldLabelStyle}>Idade & Data de Nascimento</span>
                 <strong style={fieldValueStyle}>
                   {profile?.idade ? `${profile.idade} anos` : '—'}
-                  {profile?.data_nascimento && ` (${profile.data_nascimento})`}
+                  {profile?.data_nascimento && ` (${formatDate(profile.data_nascimento)})`}
                 </strong>
               </div>
 
@@ -442,7 +443,7 @@ function ConfiguracoesContent() {
               </div>
 
               <div style={fieldItemStyle}>
-                <span style={fieldLabelStyle}>WhatsApp</span>
+                <span style={fieldLabelStyle}>WhatsApp do Aluno</span>
                 <strong style={{ ...fieldValueStyle, color: '#16a34a' }}>
                   {profile?.whatsapp || profile?.telefone || '—'}
                 </strong>
@@ -451,7 +452,8 @@ function ConfiguracoesContent() {
               <div style={fieldItemStyle}>
                 <span style={fieldLabelStyle}>Endereço & Bairro</span>
                 <strong style={fieldValueStyle}>
-                  {profile?.endereco ? `${profile.endereco} - ` : ''}{profile?.bairro || 'Pirapora - MG'}
+                  {profile?.endereco ? `${profile.endereco} — ` : ''}
+                  {profile?.bairro || `${cidadeNome} - MG`}
                 </strong>
               </div>
 
@@ -462,13 +464,18 @@ function ConfiguracoesContent() {
                   {profile?.grau_parentesco && ` (${profile.grau_parentesco})`}
                 </strong>
               </div>
+
+              <div style={fieldItemStyle}>
+                <span style={fieldLabelStyle}>Telefone do Responsável</span>
+                <strong style={fieldValueStyle}>{profile?.telefone_responsavel || '—'}</strong>
+              </div>
             </div>
           </div>
 
-          {/* Card: Vínculo Institucional & Escolar */}
+          {/* Card 2: Vínculo Institucional & Programa Descubra */}
           <div style={sectionCardStyle}>
             <h4 style={sectionHeaderStyle}>
-              <GraduationCap size={18} color="var(--color-primary)" /> Vínculo Institucional & Escolaridade
+              <GraduationCap size={18} color="var(--color-primary)" /> Vínculo Institucional & Programa Descubra
             </h4>
 
             <div style={gridFieldsStyle}>
@@ -478,48 +485,103 @@ function ConfiguracoesContent() {
               </div>
 
               <div style={fieldItemStyle}>
-                <span style={fieldLabelStyle}>Entidade Formadora</span>
+                <span style={fieldLabelStyle}>Técnico de Referência Responsável</span>
+                <strong style={{ ...fieldValueStyle, color: 'var(--color-primary)' }}>
+                  {tecnico?.nome || 'Equipe Técnica Descubra'}
+                </strong>
+              </div>
+
+              <div style={fieldItemStyle}>
+                <span style={fieldLabelStyle}>Entidade Formadora Vinculada</span>
                 <strong style={fieldValueStyle}>{profile?.entidade_formadora || 'Programa Descubra'}</strong>
               </div>
 
               <div style={fieldItemStyle}>
+                <span style={fieldLabelStyle}>Curso Encaminhado / Em Andamento</span>
+                <strong style={fieldValueStyle}>
+                  {profile?.curso_encaminhado && profile.curso_encaminhado !== 'Nenhum' 
+                    ? profile.curso_encaminhado 
+                    : 'Aguardando encaminhamento'}
+                </strong>
+              </div>
+
+              <div style={fieldItemStyle}>
                 <span style={fieldLabelStyle}>Escolaridade Atual</span>
-                <strong style={fieldValueStyle}>{profile?.escolaridade || 'Ensino Médio'}</strong>
+                <strong style={fieldValueStyle}>{profile?.escolaridade || '—'}</strong>
               </div>
 
               <div style={fieldItemStyle}>
                 <span style={fieldLabelStyle}>Turno Escolar</span>
-                <strong style={fieldValueStyle}>{profile?.turno_escolar || 'Regular'}</strong>
+                <strong style={fieldValueStyle}>{profile?.turno_escolar || '—'}</strong>
               </div>
 
               <div style={fieldItemStyle}>
                 <span style={fieldLabelStyle}>Tipo de Inscrição</span>
-                <strong style={fieldValueStyle}>{profile?.tipo_inscricao || 'Descubra Regular'}</strong>
+                <strong style={fieldValueStyle}>{profile?.tipo_inscricao || 'Descubra'}</strong>
               </div>
 
               <div style={fieldItemStyle}>
-                <span style={fieldLabelStyle}>Saldo na Loja de Prêmios</span>
-                <strong style={{ ...fieldValueStyle, color: 'var(--color-orange)' }}>
-                  {profile?.pontuacao_atual ?? 0} pontos acumulados
+                <span style={fieldLabelStyle}>Pontuação Acumulada</span>
+                <strong style={{ ...fieldValueStyle, color: 'var(--color-orange)', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                  <Award size={16} /> {profile?.pontuacao_atual ?? 0} pontos
                 </strong>
               </div>
             </div>
           </div>
 
-          {/* Card: Áreas de Interesse */}
+          {/* Card 3: Condições Socioeconômicas & Infraestrutura */}
+          <div style={sectionCardStyle}>
+            <h4 style={sectionHeaderStyle}>
+              <Home size={18} color="var(--color-primary)" /> Dados Socioeconômicos & Moradia
+            </h4>
+
+            <div style={gridFieldsStyle}>
+              <div style={fieldItemStyle}>
+                <span style={fieldLabelStyle}>Possui CadÚnico?</span>
+                <strong style={fieldValueStyle}>{profile?.possui_cadunico ? 'Sim' : 'Não'}</strong>
+              </div>
+
+              <div style={fieldItemStyle}>
+                <span style={fieldLabelStyle}>Recebe Bolsa Família?</span>
+                <strong style={fieldValueStyle}>{profile?.recebe_bolsa_familia ? 'Sim' : 'Não'}</strong>
+              </div>
+
+              <div style={fieldItemStyle}>
+                <span style={fieldLabelStyle}>Pessoas na Residência</span>
+                <strong style={fieldValueStyle}>{profile?.pessoas_residencia ?? '—'}</strong>
+              </div>
+
+              <div style={fieldItemStyle}>
+                <span style={fieldLabelStyle}>Pessoas que Trabalham</span>
+                <strong style={fieldValueStyle}>{profile?.pessoas_trabalham ?? '—'}</strong>
+              </div>
+
+              <div style={fieldItemStyle}>
+                <span style={fieldLabelStyle}>Acesso à Internet em Casa?</span>
+                <strong style={fieldValueStyle}>{profile?.possui_acesso_internet ? 'Sim' : 'Não'}</strong>
+              </div>
+
+              <div style={fieldItemStyle}>
+                <span style={fieldLabelStyle}>Possui Computador em Casa?</span>
+                <strong style={fieldValueStyle}>{profile?.possui_computador ? 'Sim' : 'Não'}</strong>
+              </div>
+            </div>
+          </div>
+
+          {/* Card 4: Áreas de Interesse Profissional */}
           {profile?.areas_interesse && profile.areas_interesse.length > 0 && (
             <div style={sectionCardStyle}>
               <h4 style={sectionHeaderStyle}>
                 <Tag size={18} color="var(--color-primary)" /> Áreas de Interesse Profissional
               </h4>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginTop: '0.5rem' }}>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginTop: '0.25rem' }}>
                 {profile.areas_interesse.map((area, idx) => (
                   <span
                     key={idx}
                     style={{
                       background: '#eff6ff',
                       color: '#2563eb',
-                      padding: '0.35rem 0.85rem',
+                      padding: '0.4rem 0.9rem',
                       borderRadius: '2rem',
                       fontSize: '0.85rem',
                       fontWeight: 600,
@@ -533,7 +595,7 @@ function ConfiguracoesContent() {
             </div>
           )}
 
-          {/* Nota Informativa para o Aluno */}
+          {/* Nota Informativa */}
           <div
             style={{
               background: '#f8fafc',
@@ -545,7 +607,7 @@ function ConfiguracoesContent() {
               lineHeight: 1.5
             }}
           >
-            💡 <strong>Precisa atualizar algum dado ou telefone?</strong> Entre em contato com a equipe técnica da sua unidade pelo botão de <strong>Ajuda & Suporte</strong> acima. Os técnicos realizarão a atualização cadastral no sistema oficial.
+            💡 <strong>Precisa atualizar algum dado, endereço ou telefone?</strong> Entre em contato com seu técnico de referência na aba de <strong>Ajuda & Suporte</strong> para realizar a alteração cadastral no sistema oficial.
           </div>
         </motion.div>
       )}
@@ -559,7 +621,7 @@ function ConfiguracoesContent() {
           transition={{ duration: 0.2 }}
           style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}
         >
-          {/* Contato da Unidade de Referência */}
+          {/* Contato da Unidade de Referência & Técnico Real */}
           <div style={sectionCardStyle}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
               <div style={{ background: '#e0f2fe', color: '#0284c7', padding: '0.65rem', borderRadius: '0.75rem' }}>
@@ -567,7 +629,7 @@ function ConfiguracoesContent() {
               </div>
               <div>
                 <h4 style={{ fontSize: '1.15rem', color: 'var(--color-primary)', margin: 0, fontWeight: 800 }}>
-                  Sua Unidade de Atendimento
+                  Sua Unidade de Atendimento & Técnico
                 </h4>
                 <span style={{ fontSize: '0.82rem', color: '#64748b' }}>
                   Equipamento socioassistencial responsável pelo seu acompanhamento
@@ -577,62 +639,75 @@ function ConfiguracoesContent() {
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
               <div style={{ background: '#f8fafc', padding: '1rem', borderRadius: '0.75rem', border: '1px solid #f1f5f9' }}>
-                <strong style={{ fontSize: '1rem', color: 'var(--color-primary)', display: 'block', marginBottom: '0.35rem' }}>
+                <strong style={{ fontSize: '1.05rem', color: 'var(--color-primary)', display: 'block', marginBottom: '0.35rem' }}>
                   {poloNome}
                 </strong>
                 <p style={{ fontSize: '0.88rem', color: '#64748b', margin: '0 0 0.35rem 0', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                  <MapPin size={15} color="var(--color-primary)" /> Pirapora - MG &bull; Atendimento presencial
+                  <MapPin size={15} color="var(--color-primary)" /> {cidadeNome} - MG &bull; Atendimento presencial
                 </p>
+                {tecnico?.nome && (
+                  <p style={{ fontSize: '0.88rem', color: 'var(--color-text)', margin: '0 0 0.35rem 0', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                    <UserCircle size={15} color="#059669" /> Técnico de Referência: <strong>{tecnico.nome}</strong>
+                  </p>
+                )}
                 <p style={{ fontSize: '0.85rem', color: '#64748b', margin: 0, display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
                   <Clock size={15} color="var(--color-primary)" /> Segunda a Sexta: 08h00 às 17h00
                 </p>
               </div>
 
-              {/* Botões de Ação Rápida no Mobile */}
+              {/* Botões de Ação com Contato Real */}
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '0.75rem' }}>
-                <a
-                  href="https://wa.me/5538999999999?text=Ol%C3%A1%2C%20sou%20aluno%20do%20Programa%20Descubra%20e%20gostaria%20de%20tirar%20uma%20d%C3%BAvida."
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{
-                    background: '#22c55e',
-                    color: '#ffffff',
-                    padding: '0.85rem 1.25rem',
-                    borderRadius: '0.75rem',
-                    fontWeight: 700,
-                    fontSize: '0.9rem',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '0.5rem',
-                    textDecoration: 'none',
-                    boxShadow: '0 4px 12px rgba(34, 197, 94, 0.25)'
-                  }}
-                >
-                  <MessageCircle size={18} />
-                  Falar no WhatsApp
-                </a>
+                {whatsappTecnicoLimpo ? (
+                  <a
+                    href={`https://wa.me/${whatsappTecnicoLimpo}?text=${whatsappMsg}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      background: '#22c55e',
+                      color: '#ffffff',
+                      padding: '0.85rem 1.25rem',
+                      borderRadius: '0.75rem',
+                      fontWeight: 700,
+                      fontSize: '0.9rem',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '0.5rem',
+                      textDecoration: 'none',
+                      boxShadow: '0 4px 12px rgba(34, 197, 94, 0.25)'
+                    }}
+                  >
+                    <MessageCircle size={18} />
+                    Falar com o Técnico no WhatsApp
+                  </a>
+                ) : (
+                  <div style={{ padding: '0.85rem 1rem', background: '#f8fafc', border: '1px dashed #cbd5e1', borderRadius: '0.75rem', fontSize: '0.85rem', color: '#64748b', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <Info size={16} /> Atendimento presencial no CRAS/CREAS de referência
+                  </div>
+                )}
 
-                <a
-                  href="tel:3837406100"
-                  style={{
-                    background: '#ffffff',
-                    color: 'var(--color-primary)',
-                    border: '1.5px solid #cbd5e1',
-                    padding: '0.85rem 1.25rem',
-                    borderRadius: '0.75rem',
-                    fontWeight: 700,
-                    fontSize: '0.9rem',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '0.5rem',
-                    textDecoration: 'none'
-                  }}
-                >
-                  <Phone size={18} />
-                  Ligar para a Unidade
-                </a>
+                {tecnico?.telefone_whatsapp && (
+                  <a
+                    href={`tel:${tecnico.telefone_whatsapp.replace(/\D/g, '')}`}
+                    style={{
+                      background: '#ffffff',
+                      color: 'var(--color-primary)',
+                      border: '1.5px solid #cbd5e1',
+                      padding: '0.85rem 1.25rem',
+                      borderRadius: '0.75rem',
+                      fontWeight: 700,
+                      fontSize: '0.9rem',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '0.5rem',
+                      textDecoration: 'none'
+                    }}
+                  >
+                    <Phone size={18} />
+                    Ligar ({tecnico.telefone_whatsapp})
+                  </a>
+                )}
               </div>
             </div>
           </div>
@@ -679,7 +754,7 @@ function ConfiguracoesContent() {
                       <strong style={{ fontSize: '0.92rem', color: 'var(--color-primary)', lineHeight: 1.4 }}>
                         {faq.q}
                       </strong>
-                      <span style={{ color: '#64748b', flexShrink: 0 }}>
+                      <span style={{ color: '#64748b' }}>
                         {isOpen ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
                       </span>
                     </button>
@@ -691,12 +766,11 @@ function ConfiguracoesContent() {
                           animate={{ height: 'auto', opacity: 1 }}
                           exit={{ height: 0, opacity: 0 }}
                           transition={{ duration: 0.2 }}
-                          style={{ overflow: 'hidden' }}
                         >
                           <div
                             style={{
                               padding: '0 1rem 1rem 1rem',
-                              color: 'var(--color-text-dark)',
+                              color: 'var(--color-text)',
                               fontSize: '0.88rem',
                               lineHeight: 1.6,
                               borderTop: '1px solid #f1f5f9'

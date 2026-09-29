@@ -23,19 +23,13 @@ export async function POST(request: Request) {
 
     const adminSupabase = getAdminClient();
 
-    // 1. Identifica o jovem autenticado ou demo
-    let jovemId = user?.id;
+    // 1. Identifica o jovem autenticado estritamente
+    const jovemId = user?.id;
     if (!jovemId) {
-      const { data: demoJovem } = await (adminSupabase.from('jovens') as any)
-        .select('id')
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .single();
-      jovemId = (demoJovem as any)?.id;
-    }
-
-    if (!jovemId) {
-      return NextResponse.json({ error: 'Cadastro de jovem não encontrado.' }, { status: 404 });
+      return NextResponse.json(
+        { error: 'Não autorizado. Faça login para resgatar prêmios.' },
+        { status: 401 }
+      );
     }
 
     // 2. Busca os dados atuais do jovem (pontos)

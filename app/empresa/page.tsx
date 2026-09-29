@@ -71,7 +71,7 @@ export default function EmpresaDashboard() {
             {company.selo && company.selo !== 'Nenhum' && (
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                 <img
-                  src={`/assets/selo-${company.selo.toLowerCase()}.png.jpeg`}
+                  src={`/assets/selo-${company.selo.toLowerCase()}.png`}
                   alt={`Selo ${company.selo}`}
                   title={`Selo ${company.selo}`}
                   style={{

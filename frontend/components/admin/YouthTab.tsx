@@ -142,7 +142,6 @@ export default function YouthTab() {
   const [step, setStep] = useState(1);
   const [form, setForm] = useState<FormState>(EMPTY_FORM);
   const [submitting, setSubmitting] = useState(false);
-  const [showPinResult, setShowPinResult] = useState<string | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [searchingCep, setSearchingCep] = useState(false);
   const modalRef = useRef<HTMLDivElement>(null);
@@ -214,7 +213,6 @@ export default function YouthTab() {
     setForm(EMPTY_FORM);
     initialFormRef.current = EMPTY_FORM;
     setErrors({});
-    setShowPinResult(null);
     setStep(1);
     setEditIdx(-1);
     setModalOpen(true);
@@ -282,7 +280,6 @@ export default function YouthTab() {
     setForm(initialData);
     initialFormRef.current = initialData;
     setErrors({});
-    setShowPinResult(y.codigo_acesso);
     setStep(1);
     setEditIdx(idx);
     setModalOpen(true);
@@ -301,7 +298,6 @@ export default function YouthTab() {
     setForm(EMPTY_FORM);
     initialFormRef.current = EMPTY_FORM;
     setErrors({});
-    setShowPinResult(null);
   };
 
   const toggleInterest = (v: string) =>
@@ -478,7 +474,6 @@ export default function YouthTab() {
 
     try {
       const isNew = editIdx === -1;
-      const pinGerado = isNew ? Math.floor(100000 + Math.random() * 900000).toString() : (showPinResult || '');
       const equipId = obterEquipamentoIdPorCidade(form.city);
 
       const dbEntry = {
@@ -500,7 +495,6 @@ export default function YouthTab() {
         entidade_formadora: 'Descubra',
         curso_encaminhado: 'Nenhum',
         turno_vaga: 'Tarde',
-        codigo_acesso: pinGerado,
         
         // Colunas adicionais de perfil e vulnerabilidade
         sexo: form.sex || null,
@@ -541,7 +535,6 @@ export default function YouthTab() {
         const json = await response.json();
         if (!response.ok) throw new Error(json.error || 'Erro na requisição');
 
-        setShowPinResult(pinGerado);
         await dialog.alert(
           'Jovem Cadastrado',
           `Jovem <b>${form.name}</b> foi cadastrado com sucesso!<br/><br/>Credenciais de acesso ao Portal do Jovem:<br/>• <b>E-mail:</b> ${form.email}<br/>• <b>Senha:</b> ${form.password}`,
@@ -661,7 +654,7 @@ export default function YouthTab() {
                   </div>
                 </div>
                 <div className="youth-card-badges">
-                  <span className="youth-card-badge status-active">PIN: {y.codigo_acesso || 'Sem PIN'}</span>
+                  <span className="youth-card-badge status-active">{y.passou_pre_aprendizagem || y.fez_pre_aprendizagem ? 'Apto' : 'Em Acompanhamento'}</span>
                   <span className={`youth-card-badge vulner-${vulnerClass(scoreSimples)}`}>{scoreSimples} Risco</span>
                 </div>
                 <div className="youth-card-details">

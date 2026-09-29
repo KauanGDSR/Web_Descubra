@@ -6,10 +6,8 @@ import { useState } from 'react';
 import { 
   Briefcase, 
   GraduationCap, 
-  BarChart, 
   Gift, 
   Calendar, 
-  FileText, 
   Settings, 
   LogOut 
 } from 'lucide-react';
@@ -18,10 +16,8 @@ import LogoutButton from '@/frontend/components/ui/LogoutButton';
 const TABS = [
   { href: '/jovem/vagas', label: 'Mural de Vagas', icon: <Briefcase size={20} /> },
   { href: '/jovem/cursos', label: 'Cursos e Capacitação', icon: <GraduationCap size={20} /> },
-  { href: '/jovem/acompanhamento', label: 'Meu Progresso', icon: <BarChart size={20} /> },
   { href: '/jovem/premios', label: 'Loja de Prêmios', icon: <Gift size={20} /> },
   { href: '/jovem/agenda', label: 'Agenda', icon: <Calendar size={20} /> },
-  { href: '/jovem/documentos', label: 'Documentos', icon: <FileText size={20} /> },
   { href: '/jovem/configuracoes', label: 'Configurações', icon: <Settings size={20} /> },
 ];
 
